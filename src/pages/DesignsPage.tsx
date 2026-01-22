@@ -1,7 +1,6 @@
 import React from "react";
 import { Card, Button, Chip, Separator } from "@heroui/react";
 import { CheckCircle2, Linkedin, Settings2, MoreHorizontal } from "lucide-react";
-import { MAPPING_DESIGNS } from "../components/MappingDesigns";
 
 // Mock Data
 const MOCK_DATA = {
@@ -294,10 +293,6 @@ const DesignsPage = () => {
               Integration Cards
               {activeTab === "cards" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
             </button>
-            <button onClick={() => handleTabChange("mapping")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "mapping" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
-              Field Mapping
-              {activeTab === "mapping" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
-            </button>
           </div>
         </div>
 
@@ -320,28 +315,6 @@ const DesignsPage = () => {
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {activeTab === "mapping" && (
-          <div key={`mapping-${Date.now()}`} className="pt-4 space-y-8 animate-in fade-in duration-300">
-            <div className="max-w-3xl">
-              <h2 className="text-2xl font-bold tracking-tight">Field Mapping Designs</h2>
-              <p className="text-gray-500 mt-1">Exploration of 30 different ways to handle data mapping.</p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-16">
-              {MAPPING_DESIGNS.map(({ id, name, Component }) => (
-                <div key={id} className="space-y-4">
-                  <h2 className="text-xl font-semibold text-gray-400">
-                    Design {id}: {name}
-                  </h2>
-                  <div className="bg-gray-50/50 dark:bg-black/20 p-6 rounded-2xl border border-gray-100 dark:border-zinc-800/50">
-                    <Component />
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         )}
       </div>
