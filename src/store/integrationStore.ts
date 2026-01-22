@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
-export type IntegrationStatus = 'connected' | 'disconnected';
+export type IntegrationStatus = "connected" | "disconnected" | "expired";
 
 export interface FieldMapping {
   id: string;
-  sourceField: string;
+  sourceFields: string[];
   targetField: string;
+  defaultValue?: string;
 }
 
 export interface IntegrationData {
@@ -16,7 +17,7 @@ export interface IntegrationData {
   enabled?: boolean;
 }
 
-const STORAGE_KEY = 'sakneen_integrations_v1';
+const STORAGE_KEY = "sakneen_integrations_v1";
 
 export const useIntegrationStore = () => {
   const [integrations, setIntegrations] = useState<Record<string, IntegrationData>>({});
@@ -40,16 +41,16 @@ export const useIntegrationStore = () => {
   };
 
   const updateIntegration = (id: string, data: Partial<IntegrationData>) => {
-    const current = integrations[id] || { id, status: 'disconnected', mappings: [], enabled: true };
+    const current = integrations[id] || { id, status: "disconnected", mappings: [], enabled: true };
     const updated = { ...current, ...data };
     saveToStorage({
       ...integrations,
-      [id]: updated
+      [id]: updated,
     });
   };
 
   const getIntegration = (id: string) => {
-    return integrations[id] || { id, status: 'disconnected', mappings: [], enabled: true };
+    return integrations[id] || { id, status: "disconnected", mappings: [], enabled: true };
   };
 
   const disconnectIntegration = (id: string) => {
@@ -61,6 +62,6 @@ export const useIntegrationStore = () => {
     integrations,
     updateIntegration,
     getIntegration,
-    disconnectIntegration
+    disconnectIntegration,
   };
 };
