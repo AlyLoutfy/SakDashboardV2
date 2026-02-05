@@ -230,19 +230,10 @@ const createReservationFlow = (): ApprovalStep[] => [
   },
 ];
 
-// Legacy combined flow for backward compatibility
-const createApprovalFlow = (): ApprovalStep[] => [...createBlockingFlow(), ...createReservationFlow()];
-
 // Helper to subtract days from current date
 const daysAgo = (days: number): Date => {
   const date = new Date();
   date.setDate(date.getDate() - days);
-  return date;
-};
-
-const hoursAgo = (hours: number): Date => {
-  const date = new Date();
-  date.setHours(date.getHours() - hours);
   return date;
 };
 
