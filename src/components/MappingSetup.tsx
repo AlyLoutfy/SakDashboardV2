@@ -1,5 +1,5 @@
 import { Button, Input, ComboBox, ListBox, Switch, Chip, Popover } from "@heroui/react";
-import { Plus, Trash2, ArrowLeft, Save, X, Search, ChevronDown } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Save, X, Search, ChevronDown, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { FieldMapping, IntegrationData } from "../store/integrationStore";
 
@@ -42,9 +42,9 @@ const SourceFieldManager = ({ currentFields, onAdd, onRemove }: { currentFields:
   return (
     <div className="flex flex-wrap gap-2 min-h-[32px] items-center">
       {currentFields.map((f) => (
-        <Chip key={f} size="sm" variant="soft" className="h-7 px-3 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 rounded-md">
+        <Chip key={f} size="sm" variant="soft" className="h-7 px-3 bg-gray-100 text-gray-700 rounded-md">
           {f}
-          <button type="button" onClick={() => onRemove(f)} className="ml-1 hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition-colors" aria-label="Remove source">
+          <button type="button" onClick={() => onRemove(f)} className="ml-1 hover:bg-black/10 rounded-full p-0.5 transition-colors" aria-label="Remove source">
             <X size={10} />
           </button>
         </Chip>
@@ -68,7 +68,7 @@ const SourceFieldManager = ({ currentFields, onAdd, onRemove }: { currentFields:
             }}
           >
             <ComboBox.InputGroup>
-              <Input placeholder="Type or select..." className="bg-transparent text-xs px-2 [&>div]:min-h-0 [&>div]:h-8 [&>div]:rounded-md [&>div]:shadow-sm border-blue-500" />
+              <Input placeholder="Type or select..." className="bg-transparent text-xs px-2 [&>div]:min-h-0 [&>div]:h-8 [&>div]:rounded-md [&>div]:shadow-sm border-emerald-500" />
               <ComboBox.Trigger />
             </ComboBox.InputGroup>
             <ComboBox.Popover>
@@ -83,7 +83,7 @@ const SourceFieldManager = ({ currentFields, onAdd, onRemove }: { currentFields:
           </ComboBox>
         </div>
       ) : (
-        <button onClick={() => setIsAdding(true)} className="w-6 h-6 rounded-full border border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-blue-500 hover:border-blue-500 transition-colors" aria-label="Add Source">
+        <button onClick={() => setIsAdding(true)} className="w-6 h-6 rounded-full border border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-emerald-500 hover:border-emerald-500 transition-colors" aria-label="Add Source">
           <Plus size={12} />
         </button>
       )}
@@ -111,18 +111,18 @@ const TargetFieldSelect = ({ value, onChange, options }: { value: string; onChan
         <div className="w-full">
           <div className="relative w-full">
             {/* @ts-ignore */}
-            <Input value={value || ""} placeholder="Sakneen Field" readOnly className="w-full text-sm h-8 [&>div]:rounded-sm [&>div]:min-h-0 cursor-pointer caret-transparent [&>div]:!outline-none [&>div]:!ring-0 [&>div]:focus-within:!ring-0 [&_input]:pr-8" />
-            <ChevronDown size={14} className={`absolute right-2 top-1/2 -translate-y-1/2 text-default-400 pointer-events-none transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
-          </div>{" "}
+            <Input value={value || ""} placeholder="Sakneen Field" readOnly className="w-full text-sm h-8 [&>div]:rounded-md [&>div]:min-h-0 cursor-pointer caret-transparent [&>div]:!outline-none [&>div]:!ring-0 [&>div]:focus-within:!ring-0 [&_input]:pr-8" />
+            <ChevronDown size={14} className={`absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+          </div>
         </div>
       </Popover.Trigger>
-      <Popover.Content className="w-[220px] p-0 shadow-2xl border border-gray-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-900 overflow-hidden ring-1 ring-black/5">
-        <div className="bg-gray-100 p-2 border-b border-gray-200">
-          <div className="relative shadow-sm bg-white dark:bg-zinc-800 rounded-md overflow-hidden border border-gray-200 dark:border-zinc-700">
+      <Popover.Content className="w-[220px] p-0 shadow-xl border border-gray-200 rounded-xl bg-white overflow-hidden">
+        <div className="bg-gray-50 p-2 border-b border-gray-100">
+          <div className="relative bg-white rounded-md overflow-hidden border border-gray-200">
             <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
               <Search size={12} />
             </div>
-            <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()} onFocus={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()} placeholder="Search..." className="w-full pl-8 pr-2 py-1.5 text-xs border-none bg-transparent focus:outline-none placeholder:text-gray-400 text-gray-900 dark:text-gray-100" />
+            <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()} onFocus={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()} placeholder="Search..." className="w-full pl-8 pr-2 py-1.5 text-xs border-none bg-transparent focus:outline-none placeholder:text-gray-400 text-gray-900" />
           </div>
         </div>
         <ListBox
@@ -141,7 +141,7 @@ const TargetFieldSelect = ({ value, onChange, options }: { value: string; onChan
           items={items}
         >
           {(item) => (
-            <ListBox.Item key={item.key} textValue={item.label} className="data-[hover=true]:bg-blue-50 dark:data-[hover=true]:bg-blue-900/20 data-[selected=true]:text-blue-600 dark:data-[selected=true]:text-blue-400 rounded-md px-2 py-1.5 text-xs transition-colors w-full cursor-pointer outline-none">
+            <ListBox.Item key={item.key} textValue={item.label} className="data-[hover=true]:bg-emerald-50 data-[selected=true]:text-emerald-600 rounded-md px-2 py-1.5 text-xs transition-colors w-full cursor-pointer outline-none">
               {item.label}
             </ListBox.Item>
           )}
@@ -221,79 +221,86 @@ const MappingSetup = ({ integration, integrationName = "Integration", onBack, on
   };
 
   return (
-    <div className="animate-in slide-in-from-right-4 duration-300 pb-10">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <Button variant="ghost" onPress={onBack} className="pl-0 gap-2 hover:bg-transparent text-gray-500 hover:text-gray-900 mb-2">
-            <ArrowLeft size={20} /> Back to Integrations
-          </Button>
-          <div className="flex items-center gap-4">
-            <h2 className="text-3xl font-bold">{integrationName}</h2>
-            <div className="flex items-center gap-2 bg-gray-100 dark:bg-zinc-800 rounded-full px-3 py-1">
-              <span className={`w-2 h-2 rounded-full ${integration.enabled ? "bg-green-500" : "bg-gray-400"}`}></span>
-              <span className="text-xs font-semibold uppercase text-gray-500">{integration.enabled ? "Active" : "Disabled"}</span>
-              <Switch size="sm" isSelected={integration.enabled ?? true} onChange={handleToggleEnabled} className="ml-2 scale-75">
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-              </Switch>
-            </div>
-          </div>
-          <p className="text-gray-500 mt-1">Configure how {integrationName} sends data to your CRM.</p>
+    <div className="h-full w-full bg-white text-gray-900 rounded-xl overflow-hidden font-sans border border-gray-200 flex flex-col shadow-sm">
+      {/* Top Bar */}
+      <div className="h-14 border-b border-gray-200 flex items-center justify-between px-4 bg-gray-50/50 shrink-0">
+        <div className="flex items-center gap-2 text-gray-500">
+          <button onClick={onBack} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+            <ArrowLeft size={18} />
+          </button>
+          <Settings size={18} />
+          <span className="text-sm font-bold text-gray-700">Configure</span>
+          <span className="text-gray-300">/</span>
+          <span className="text-sm font-medium text-gray-900">{integrationName}</span>
         </div>
-        <div className="flex gap-3">
-          <Button variant="secondary" onPress={onBack}>
-            Cancel
-          </Button>
-          <Button variant="primary" onPress={handleSave} className={`text-white shadow-lg shadow-blue-500/20 px-6 ${hasChanges ? "bg-blue-600" : "bg-blue-500/80"}`} isPending={isLoading} isDisabled={!hasChanges}>
-            <Save size={18} className="mr-2" /> Save Changes
+        <div className="flex gap-2 items-center">
+          {/* Status Toggle */}
+          <div className={`${integration.enabled ? "bg-emerald-50 border-emerald-200" : "bg-gray-100 border-gray-200"} border rounded-full px-3 py-1 flex items-center gap-2 text-xs font-medium h-8`}>
+            <span className={`w-2 h-2 rounded-full ${integration.enabled ? "bg-emerald-500" : "bg-gray-400"}`} />
+            <span className={integration.enabled ? "text-emerald-700" : "text-gray-500"}>{integration.enabled ? "Active" : "Disabled"}</span>
+            <Switch size="sm" isSelected={integration.enabled ?? true} onChange={handleToggleEnabled} className="scale-75">
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch>
+          </div>
+          <Button size="sm" className="bg-gray-900 text-white h-8 font-medium rounded-full px-4 shadow-sm hover:bg-gray-800 disabled:opacity-50" onPress={handleSave} isPending={isLoading} isDisabled={!hasChanges}>
+            <Save size={14} className="mr-2" /> Save Changes
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
-        {rows.map((row) => (
-          <div key={row.id} className="flex items-center gap-6 bg-white dark:bg-zinc-900 p-4 rounded-lg border border-gray-200 dark:border-zinc-800 shadow-sm relative overflow-visible group">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l-lg" />
+      {/* Content */}
+      <div className="flex-1 overflow-auto p-6">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Field Mapping</h1>
+          <p className="text-gray-500 mt-1">Configure how {integrationName} sends data to your CRM.</p>
+        </div>
 
-            {/* Target Field */}
-            <div className="flex-1 min-w-[240px]">
-              <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-1 block ml-1">Target Field</label>
-              <div className="flex items-center">
+        {/* Mapping Rows */}
+        <div className="flex flex-col gap-3">
+          {rows.map((row) => (
+            <div key={row.id} className="flex items-center gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden group hover:border-gray-300 transition-colors">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500" />
+
+              {/* Target Field */}
+              <div className="flex-1 min-w-[200px]">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block ml-1">Target Field</label>
                 <TargetFieldSelect value={row.targetField} onChange={(val) => updateRow(row.id, { targetField: val })} options={SAKNEEN_FIELDS} />
               </div>
+
+              <div className="text-gray-300 mt-4 shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m12 19-7-7 7-7" />
+                  <path d="M19 12H5" />
+                </svg>
+              </div>
+
+              {/* Sources */}
+              <div className="flex-[2] min-w-[280px]">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Sources</label>
+                <SourceFieldManager currentFields={row.sourceFields} onAdd={(val) => addSourceField(row.id, val)} onRemove={(val) => removeSourceField(row.id, val)} />
+              </div>
+
+              <div className="w-px h-8 bg-gray-100 mx-1 shrink-0" />
+
+              {/* Fallback */}
+              <div className="flex-1 max-w-[160px] mr-12">
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Fallback</label>
+                <Input placeholder="null" value={row.defaultValue || ""} onChange={(e) => updateRow(row.id, { defaultValue: e.target.value })} className="font-mono text-sm h-8 [&>div]:rounded-md" />
+              </div>
+
+              <Button isIconOnly size="sm" variant="ghost" className="mt-4 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg shrink-0" onPress={() => removeRow(row.id)}>
+                <Trash2 size={16} />
+              </Button>
             </div>
+          ))}
 
-            <div className="text-gray-300 mt-4 shrink-0">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m12 19-7-7 7-7" />
-                <path d="M19 12H5" />
-              </svg>
-            </div>
-
-            {/* Sources */}
-            <div className="flex-[2] min-w-[300px]">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-1 block">Sources</label>
-              <SourceFieldManager currentFields={row.sourceFields} onAdd={(val) => addSourceField(row.id, val)} onRemove={(val) => removeSourceField(row.id, val)} />
-            </div>
-
-            <div className="w-px h-10 bg-gray-100 dark:bg-zinc-800 mx-2 shrink-0" />
-
-            {/* Fallback */}
-            <div className="flex-1 max-w-[200px]">
-              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-1 block">Fallback</label>
-              <Input placeholder="null" value={row.defaultValue || ""} onChange={(e) => updateRow(row.id, { defaultValue: e.target.value })} className="font-mono text-sm h-8 [&>div]:rounded-sm" />
-            </div>
-
-            <Button isIconOnly size="sm" variant="ghost" className="mt-4 text-gray-300 hover:text-red-500" onPress={() => removeRow(row.id)}>
-              <Trash2 size={16} />
-            </Button>
-          </div>
-        ))}
-
-        <Button variant="ghost" className="w-full h-12 border-2 border-dashed border-gray-200 text-gray-400 font-medium hover:border-blue-500 hover:text-blue-500" onPress={addRow}>
-          + Add New Mapping
-        </Button>
+          <Button variant="ghost" className="w-full h-12 border-2 border-dashed border-gray-200 text-gray-400 font-medium hover:border-emerald-500 hover:text-emerald-600 rounded-xl" onPress={addRow}>
+            + Add New Mapping
+          </Button>
+        </div>
       </div>
     </div>
   );
