@@ -11,6 +11,7 @@ import { PENDING_ANIMATION_DESIGNS } from "../components/PendingAnimationDesigns
 import { UNIT_DRAWER_DESIGNS } from "../components/UnitDrawerDesigns";
 import { APPROVAL_FLOW_DESIGNS } from "../components/ApprovalFlowDesigns";
 import { HISTORY_TAB_DESIGNS } from "../components/HistoryTabDesigns";
+import { DATE_PICKER_DESIGNS } from "../components/DatePickerDesigns";
 import { Search } from "lucide-react";
 
 const DESIGNS = INTEGRATION_DESIGNS;
@@ -250,6 +251,10 @@ const DesignsPage = () => {
               History Tab
               {activeTab === "history_tab" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
             </button>
+            <button onClick={() => handleTabChange("date_picker")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "date_picker" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
+              Date Picker
+              {activeTab === "date_picker" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
+            </button>
           </div>
         </div>
 
@@ -484,6 +489,17 @@ const DesignsPage = () => {
                 <div className="w-full bg-gray-50/50 p-8 rounded-3xl border border-gray-100">
                   <Component />
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Date Picker Designs */}
+        {activeTab === "date_picker" && (
+          <div key={`date_picker-${Date.now()}`} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {DATE_PICKER_DESIGNS.map(({ id, name, Component }) => (
+              <div key={id} className="flex justify-center">
+                <Component />
               </div>
             ))}
           </div>

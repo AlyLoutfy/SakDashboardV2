@@ -6,6 +6,7 @@ import ReportsPage from "./pages/ReportsPage";
 import PaymentPlansPage from "./pages/PaymentPlansPage";
 import BlockingRequestsPage from "./pages/BlockingRequestsPage";
 import ReservationRequestsPage from "./pages/ReservationRequestsPage";
+import ComponentLibraryPage from "./pages/ComponentLibraryPage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="payment-plans" element={<PaymentPlansPage />} />
           <Route path="blocking-requests" element={<BlockingRequestsPage />} />
           <Route path="reservation-requests" element={<ReservationRequestsPage />} />
+          <Route path="components" element={<ComponentLibraryPage />} />
         </Route>
       </Routes>
     </HashRouter>

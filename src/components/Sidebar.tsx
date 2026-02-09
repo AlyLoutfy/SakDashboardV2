@@ -1,90 +1,229 @@
 import { Link, useLocation } from "react-router-dom";
-import { Button } from "@heroui/react";
-import { LayoutDashboard, Settings, Workflow, Menu, X, FileSpreadsheet, Palette, CreditCard, Building2, ClipboardList } from "lucide-react";
+import { Button, Tooltip } from "@heroui/react";
+import { Building2, Layers, CreditCard, Database, Users, TrendingUp, Calendar, FileText, FilePlus, User, Settings, Bell, ExternalLink, LogOut, PanelLeftClose, PanelLeftOpen, Home as HomeIcon, Palette, Component, ChevronRight, ChevronDown, LayoutDashboard, Shield, BarChart3, Link2 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useReservationRequestsStore } from "../store/reservationRequestsStore";
 
-// Current user ID - in a real app this would come from auth context
-const CURRENT_USER_ID = "O001"; // Sara Mostafa from Operations - has pending items
+// Current user matching the screenshot
+const CURRENT_USER = {
+  name: "Michael Robinson",
+  role: "Admin",
+  initials: "MR",
+};
+const CURRENT_USER_ID = "O001";
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  // Track open/closed state for sections
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    INVENTORY: true,
+    "SALES & LEADS": true,
+    ADMIN: true,
+    DEVELOPMENT: true,
+  });
+
   const location = useLocation();
 
-  // Get pending count for current user
+  const toggleSection = (sectionTitle: string) => {
+    setOpenSections((prev) => ({ ...prev, [sectionTitle]: !prev[sectionTitle] }));
+  };
+
   const getPendingCountForUser = useReservationRequestsStore((state) => state.getPendingCountForUser);
   const pendingReservationsCount = getPendingCountForUser(CURRENT_USER_ID);
 
-  const menuItems = [
-    { name: "Dashboard", path: "/", icon: LayoutDashboard },
-    { name: "Integrations", path: "/integrations", icon: Workflow },
-    { name: "Reports", path: "/reports", icon: FileSpreadsheet },
-    { name: "Payment Plans", path: "/payment-plans", icon: CreditCard },
-    { name: "Unit Blocking", path: "/blocking-requests", icon: Building2 },
-    { name: "Reservations", path: "/reservation-requests", icon: ClipboardList, badge: pendingReservationsCount },
-    { name: "Designs", path: "/designs", icon: Palette },
-    { name: "Settings", path: "/settings", icon: Settings },
+  const sidebarSections = [
+    {
+      title: "INVENTORY",
+      items: [
+        { name: "Summary", path: "/", icon: HomeIcon },
+        { name: "Compounds", path: "/compounds", icon: Building2 },
+        { name: "Unit Designs", path: "/unit-designs", icon: Layers },
+        { name: "Payment Plans", path: "/payment-plans", icon: CreditCard },
+        { name: "Unit Data", path: "/unit-data", icon: Database },
+      ],
+    },
+    {
+      title: "SALES & LEADS",
+      items: [
+        { name: "Leads", path: "/leads", icon: Users },
+        { name: "Leads Summary", path: "/leads-summary", icon: TrendingUp },
+        { name: "Reservations", path: "/reservation-requests", icon: Calendar, badge: pendingReservationsCount || 3 },
+        { name: "Blocking Requests", path: "/blocking-requests", icon: Shield },
+        { name: "Contracts", path: "/contracts", icon: FileText },
+        { name: "EOIs", path: "/eois", icon: FilePlus },
+      ],
+    },
+    {
+      title: "ADMIN",
+      items: [
+        { name: "Users", path: "/users", icon: User },
+        { name: "Teams", path: "/teams", icon: Users },
+        { name: "Brokerages", path: "/brokerages", icon: Building2 },
+        { name: "Reports", path: "/reports", icon: BarChart3 },
+        { name: "Integrations", path: "/integrations", icon: Link2 },
+        { name: "Settings", path: "/settings", icon: Settings },
+      ],
+    },
+    {
+      title: "DEVELOPMENT",
+      items: [
+        { name: "Designs", path: "/designs", icon: Palette },
+        { name: "Components", path: "/components", icon: Component },
+      ],
+    },
   ];
 
-  const variants = {
+  const sidebarVariants = {
     expanded: { width: "220px" },
-    collapsed: { width: "72px" },
+    collapsed: { width: "68px" }, // Matches screenshot
   };
 
   return (
-    <motion.div initial="expanded" animate={isCollapsed ? "collapsed" : "expanded"} variants={variants} className="h-[calc(100vh-2rem)] my-4 ml-4 bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl flex flex-col transition-all duration-300 relative z-20 shadow-xl shadow-gray-200/50">
+    <motion.div initial="expanded" animate={isCollapsed ? "collapsed" : "expanded"} variants={sidebarVariants} className="h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-300 relative z-50 flex-shrink-0">
       {/* Header */}
-      <div className="p-4 flex items-center justify-between">
-        <AnimatePresence>
-          {!isCollapsed && (
-            <motion.h1 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="text-lg font-bold text-emerald-600">
-              Sakneen
-            </motion.h1>
-          )}
-        </AnimatePresence>
-        <Button isIconOnly variant="ghost" onPress={() => setIsCollapsed(!isCollapsed)} className="ml-auto text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg">
-          {isCollapsed ? <Menu size={18} /> : <X size={18} />}
-        </Button>
+      <div className={`h-14 flex items-center border-b border-gray-100 flex-shrink-0 relative transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "justify-between px-4"}`}>
+        {!isCollapsed && (
+          <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
+            <div className="w-7 h-7 bg-black text-white rounded-lg flex items-center justify-center font-bold flex-shrink-0 shadow-sm">
+              <HomeIcon size={16} />
+            </div>
+            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="font-bold text-sm text-gray-900 whitespace-nowrap overflow-hidden truncate">
+              G Developments
+            </motion.span>
+          </div>
+        )}
+
+        <button onClick={() => setIsCollapsed(!isCollapsed)} className={`text-gray-500 hover:text-gray-900 p-1.5 rounded-lg hover:bg-gray-100 transition-all ${isCollapsed ? "w-10 h-10 flex items-center justify-center" : "flex-shrink-0"}`}>
+          {isCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={18} />}
+        </button>
+      </div>
+
+      {/* Sales Tool & Notification - Simplified */}
+      {/* Sales Tool & Notification - Simplified */}
+      <div className="py-2 px-3 border-b border-gray-100 flex flex-col gap-2 flex-shrink-0">
+        <div className={`flex items-center ${isCollapsed ? "flex-col justify-center space-y-2" : "justify-between w-full"}`}>
+          {/* Sales Tool Button */}
+          <Button className={`bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium h-8 text-xs ${isCollapsed ? "w-8 px-0 min-w-0 justify-center rounded-lg" : "px-2.5 rounded-full"}`} variant="ghost">
+            {isCollapsed ? (
+              <ExternalLink size={16} />
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <ExternalLink size={14} />
+                <span>Sales Tool</span>
+              </div>
+            )}
+          </Button>
+
+          {/* Notification Bell */}
+          <div className="relative">
+            <button className={`h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 transition-colors ${isCollapsed ? "w-8 border border-transparent" : "w-8 mr-1"}`}>
+              <Bell size={16} />
+            </button>
+            <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full border border-white shadow-sm ring-1 ring-white">2</span>
+          </div>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 space-y-1 mt-2">
-        {menuItems.map((item) => {
-          const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
-
-          return (
-            <Link key={item.path} to={item.path} className="block">
-              <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${isActive ? "bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}>
-                <div className="relative">
-                  <item.icon size={20} className={isActive ? "text-emerald-600" : "text-gray-400"} />
-                  {/* Badge for collapsed state */}
-                  {isCollapsed && item.badge && item.badge > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-white bg-red-500 rounded-full px-1">{item.badge > 9 ? "9+" : item.badge}</span>}
-                </div>
-                <AnimatePresence>
-                  {!isCollapsed && (
-                    <motion.div initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: "auto" }} exit={{ opacity: 0, width: 0 }} className="flex items-center justify-between flex-1 overflow-hidden">
-                      <span className="whitespace-nowrap">{item.name}</span>
-                      {/* Badge for expanded state */}
-                      {item.badge && item.badge > 0 && <span className="min-w-[20px] h-[20px] flex items-center justify-center text-[10px] font-bold text-white bg-red-500 rounded-full px-1.5 ml-2">{item.badge > 99 ? "99+" : item.badge}</span>}
+      <nav className="flex-1 overflow-y-auto py-2 px-3 space-y-4 scrollbar-thin scrollbar-thumb-gray-200">
+        {sidebarSections.map((section, idx) => (
+          <div key={idx} className="group/section">
+            {/* Section Header */}
+            <div onClick={() => !isCollapsed && toggleSection(section.title)} className={`flex items-center mb-1 ${isCollapsed ? "justify-center" : "justify-between cursor-pointer hover:text-gray-600 px-2"} transition-colors`}>
+              <AnimatePresence mode="wait">
+                {!isCollapsed ? (
+                  <>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider select-none">{section.title}</span>
+                    <motion.div initial={false} animate={{ rotate: openSections[section.title] ? 0 : -90 }} className="text-gray-400">
+                      <ChevronDown size={14} />
                     </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </Link>
-          );
-        })}
+                  </>
+                ) : (
+                  <div className="text-[9px] font-bold text-gray-400 uppercase tracking-wider text-center leading-tight select-none">
+                    {section.title === "SALES & LEADS" ? (
+                      <>
+                        SALES
+                        <br />&<br />
+                        LEADS
+                      </>
+                    ) : (
+                      section.title
+                    )}
+                  </div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Items Container */}
+            <AnimatePresence initial={false}>
+              {(openSections[section.title] || isCollapsed) && (
+                <motion.div initial={!isCollapsed ? { height: 0, opacity: 0 } : undefined} animate={!isCollapsed ? { height: "auto", opacity: 1 } : undefined} exit={!isCollapsed ? { height: 0, opacity: 0 } : undefined} transition={{ duration: 0.2 }} className={`${isCollapsed ? "mt-1 space-y-1 flex flex-col items-center" : "space-y-0.5 overflow-hidden"}`}>
+                  {section.items.map((item) => {
+                    const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
+
+                    const content = (
+                      <Link key={item.path} to={item.path} className="block group w-full relative">
+                        {/* Wrapper for styling */}
+                        <div
+                          className={`
+                                relative flex items-center gap-2.5 px-2 py-1.5 text-xs font-medium transition-all duration-200 rounded-lg
+                                ${isActive ? "bg-emerald-50 text-emerald-700 font-bold" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}
+                                ${isCollapsed ? "justify-center w-7 h-7 p-0 mx-auto" : ""}
+                              `}
+                        >
+                          <item.icon size={isCollapsed ? 16 : 16} className={`flex-shrink-0 ${isActive ? "text-emerald-500" : "text-gray-500 group-hover:text-gray-700"}`} strokeWidth={2} />
+
+                          {/* Badge for Collapsed State */}
+                          {isCollapsed && item.badge ? <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] flex items-center justify-center text-[9px] font-bold text-white bg-red-500 rounded-full px-0.5 border border-white z-10 shadow-sm">{item.badge}</span> : null}
+
+                          {!isCollapsed && (
+                            <div className="flex items-center justify-between flex-1 overflow-hidden ml-1">
+                              <span className="truncate">{item.name}</span>
+                              {item.badge ? <span className="min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-white bg-red-500 rounded-full px-1.5 ml-2">{item.badge}</span> : null}
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                    );
+
+                    return isCollapsed ? (
+                      <Tooltip key={item.path} delay={0}>
+                        <Tooltip.Trigger>
+                          <div className="w-full">{content}</div>
+                        </Tooltip.Trigger>
+                        <Tooltip.Content placement="right" className="bg-gray-900 text-white px-2 py-1 rounded text-xs font-medium z-[60]">
+                          {item.name}
+                        </Tooltip.Content>
+                      </Tooltip>
+                    ) : (
+                      content
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Divider */}
+            {idx < sidebarSections.length - 1 && <div className={`h-px bg-gray-100 my-2 ${isCollapsed ? "mx-auto w-8" : "mx-4"}`} />}
+          </div>
+        ))}
       </nav>
 
-      {/* User Section */}
-      <div className="p-4 border-t border-gray-100">
-        <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"}`}>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-400 to-teal-500 flex-shrink-0 shadow-md" />
+      {/* User Footer */}
+      <div className="p-2 border-t border-gray-100 flex-shrink-0 bg-white">
+        <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-2"}`}>
+          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 font-bold text-xs flex-shrink-0 group cursor-pointer hover:bg-gray-200 transition-colors border border-gray-200">{CURRENT_USER.initials}</div>
           <AnimatePresence>
             {!isCollapsed && (
-              <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="flex flex-col overflow-hidden">
-                <span className="text-sm font-medium text-gray-800 truncate">Sara Mostafa</span>
-                <span className="text-xs text-gray-400 truncate">Operations</span>
+              <motion.div initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: "auto" }} exit={{ opacity: 0, width: 0 }} className="flex items-center justify-between flex-1 overflow-hidden">
+                <div className="flex flex-col min-w-0 ml-1">
+                  <span className="text-xs font-bold text-gray-900 truncate leading-tight">{CURRENT_USER.name}</span>
+                  <span className="text-[10px] text-gray-500 truncate leading-tight">{CURRENT_USER.role}</span>
+                </div>
+                <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                  <LogOut size={14} />
+                </button>
               </motion.div>
             )}
           </AnimatePresence>

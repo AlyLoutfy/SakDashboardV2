@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Popover } from "@heroui/react";
-import { format, isSameDay } from "date-fns";
-import { Calendar as CalendarIcon, X } from "lucide-react";
+import { format, isSameDay, addMonths, subMonths } from "date-fns";
+import { Calendar as CalendarIcon, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker, type DateRange } from "react-day-picker";
-import "react-day-picker/dist/style.css";
 
 interface DateRangePickerProps {
   value: DateRange | undefined;
@@ -14,12 +13,22 @@ interface DateRangePickerProps {
 
 export default function DateRangePicker({ value, onChange, className, placeholder = "Select dates" }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+
+  // Sync current month with value when popover opens
+  useEffect(() => {
+    if (isOpen) {
+      if (value?.from) {
+        setCurrentMonth(value.from);
+      } else {
+        setCurrentMonth(new Date());
+      }
+    }
+  }, [isOpen, value]);
 
   const handleSelect = (range: DateRange | undefined) => {
     onChange(range);
-    if (range?.from && range?.to) {
-      setTimeout(() => setIsOpen(false), 300);
-    }
+    // User requested to NOT close the datepicker automatically
   };
 
   const getDisplayValue = () => {
@@ -34,6 +43,9 @@ export default function DateRangePicker({ value, onChange, className, placeholde
     e.stopPropagation();
     onChange(undefined);
   };
+
+  const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
   return (
     <Popover isOpen={isOpen} onOpenChange={setIsOpen}>
@@ -53,65 +65,213 @@ export default function DateRangePicker({ value, onChange, className, placeholde
           </div>
         </div>
       </Popover.Trigger>
-      <Popover.Content placement="bottom start" className="p-4 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-[100] min-w-[320px]">
-        <DayPicker
-          mode="range"
-          selected={value}
-          onSelect={handleSelect}
-          showOutsideDays={true}
-          weekStartsOn={1}
-          className="m-0 font-sans"
-          classNames={{
-            root: "w-full",
-            months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-            month: "space-y-4 w-full",
-            caption: "flex justify-between pt-1 relative items-center px-1",
-            caption_label: "text-sm font-bold text-gray-900",
-            nav: "flex items-center gap-1",
-            nav_button: "h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity hover:bg-gray-100 rounded-full flex items-center justify-center text-gray-600",
-            table: "w-full border-collapse space-y-1",
-            head_row: "flex",
-            head_cell: "text-gray-400 rounded-md w-9 font-medium text-[0.8rem]",
-            row: "flex w-full mt-2",
-            cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-transparent focus-within:relative focus-within:z-20",
-            day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-full hover:bg-gray-100 transition-colors text-gray-900",
-            day_range_start: "day-range-start",
-            day_range_end: "day-range-end",
-            day_selected: "bg-blue-600 text-white hover:bg-blue-600 hover:text-white focus:bg-blue-600 focus:text-white !rounded-full font-semibold shadow-md shadow-blue-200",
-            day_today: "bg-gray-100 text-gray-900 font-bold",
-            day_outside: "text-gray-300 opacity-50",
-            day_disabled: "text-gray-300 opacity-50",
-            day_range_middle: "aria-selected:bg-blue-50 aria-selected:text-blue-700 !rounded-none first:rounded-l-full last:rounded-r-full",
-            day_hidden: "invisible",
-          }}
-        />
-        {/* Custom refinement specifically for start/end rounding overlap in range mode */}
+
+      {/* Popover Content */}
+      <Popover.Content placement="bottom start" className="p-0 bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden z-[100] w-auto">
+        <div className="p-4 space-y-3">
+          {/* Custom Header */}
+          <div className="flex items-center justify-between px-2 mb-1">
+            <button type="button" onClick={handlePrevMonth} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
+              <ChevronLeft size={16} />
+            </button>
+            <span className="font-bold text-sm text-gray-800">{format(currentMonth, "MMMM yyyy")}</span>
+            <button type="button" onClick={handleNextMonth} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
+              <ChevronRight size={16} />
+            </button>
+          </div>
+
+          <DayPicker
+            mode="range"
+            month={currentMonth}
+            onMonthChange={setCurrentMonth}
+            selected={value}
+            onSelect={handleSelect}
+            showOutsideDays={true}
+            weekStartsOn={1}
+            className="m-0 font-sans compact-pills-calendar"
+            classNames={{
+              root: "w-full",
+              months: "flex flex-col",
+              month: "space-y-3 w-full",
+              caption: "hidden", // Hide default caption/nav
+              caption_label: "hidden", // Also hide specific label
+              table: "w-full border-collapse",
+              head_row: "flex gap-0.5 bg-gray-50 rounded-xl p-2 mb-2",
+              head_cell: "text-center text-[10px] font-semibold text-gray-400 flex-1 py-1", // Reduced weight
+              row: "flex gap-0.5 w-full",
+              cell: "text-center text-sm p-0.5 relative flex-1",
+              day: "h-8 w-8 mx-auto rounded-full text-xs font-normal transition-all hover:bg-gray-100 text-gray-700", // Normal weight, circle
+              day_range_start: "day-range-start",
+              day_range_end: "day-range-end",
+              day_selected: "day-selected", // Custom class for blue circle
+              day_today: "bg-transparent text-indigo-600 font-bold border border-indigo-200", // Just text and border? Or bg?
+              day_outside: "text-gray-300 opacity-50",
+              day_disabled: "text-gray-300 opacity-50",
+              day_range_middle: "day-range-middle", // Custom class for grey circle
+              day_hidden: "invisible",
+            }}
+          />
+        </div>
+
+        {/* Compact Pills Design Styles for react-day-picker v9 */}
         <style>{`
-          .day-range-start {
-             border-top-left-radius: 9999px !important;
-             border-bottom-left-radius: 9999px !important;
-             border-top-right-radius: 0 !important;
-             border-bottom-right-radius: 0 !important;
+          /* Base calendar reset */
+          .compact-pills-calendar {
+            margin: 0;
+            font-family: inherit;
           }
-           .day-range-end {
-             border-top-left-radius: 0 !important;
-             border-bottom-left-radius: 0 !important;
-             border-top-right-radius: 9999px !important;
-             border-bottom-right-radius: 9999px !important;
+
+          /* Hide default header elements as we use a custom one */
+          .compact-pills-calendar .rdp-caption, 
+          .compact-pills-calendar .rdp-nav,
+          .compact-pills-calendar .rdp-caption_label,
+          .compact-pills-calendar .rdp-month_caption,
+          .compact-pills-calendar .rdp-button_previous,
+          .compact-pills-calendar .rdp-button_next {
+            display: none !important;
           }
-          .rdp-day_selected:not(.rdp-day_outside) {
-             background-color: #006FEE; /* HeroUI Blue */
-             color: white;
+          
+          /* Weekdays Header */
+          .compact-pills-calendar .rdp-weekdays,
+          .compact-pills-calendar .rdp-head_row {
+            display: flex;
+            background-color: #f9fafb;
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            gap: 2px;
           }
-          .rdp-day_range_middle:not(.rdp-day_outside) {
-             background-color: #E6F1FE !important; /* Very light blue */
-             color: #006FEE !important;
-             border-radius: 0 !important;
+          
+          .compact-pills-calendar .rdp-weekday,
+          .compact-pills-calendar .rdp-head_cell {
+            flex: 1;
+            text-align: center;
+            font-size: 10px;
+            font-weight: 500;
+            color: #9ca3af;
+            text-transform: uppercase;
+            padding: 0.25rem 0;
           }
-           /* Full circle for single selection or start/end if they are same */
-           .rdp-day_range_start.rdp-day_range_end {
-              border-radius: 9999px !important;
-           }
+          
+          /* Table Layout */
+          .compact-pills-calendar .rdp-month,
+          .compact-pills-calendar .rdp-months {
+            width: 100%;
+          }
+          
+          .compact-pills-calendar .rdp-weeks,
+          .compact-pills-calendar .rdp-tbody {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+          }
+          
+          .compact-pills-calendar .rdp-week,
+          .compact-pills-calendar .rdp-row {
+            display: flex;
+            gap: 4px;
+          }
+          
+          /* Day Cell - v9 uses .rdp-day for the cell */
+          .compact-pills-calendar .rdp-day,
+          .compact-pills-calendar .rdp-cell {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+          }
+          
+          /* Day Button - v9 uses .rdp-day_button for the button */
+          .compact-pills-calendar .rdp-day_button,
+          .compact-pills-calendar .rdp-button {
+            width: 32px !important;
+            height: 32px !important;
+            min-width: 32px !important;
+            min-height: 32px !important;
+            max-width: 32px !important;
+            max-height: 32px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border-radius: 50% !important;
+            font-size: 13px !important;
+            font-weight: 400 !important;
+            color: #374151;
+            background: transparent;
+            border: none !important;
+            cursor: pointer;
+            transition: background-color 0.15s, color 0.15s;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            line-height: 1 !important;
+            text-align: center !important;
+            box-sizing: border-box !important;
+          }
+          
+          .compact-pills-calendar .rdp-day_button:hover {
+            background-color: #f3f4f6;
+          }
+          
+          /* Today */
+          .compact-pills-calendar .rdp-today .rdp-day_button,
+          .compact-pills-calendar .rdp-day_today .rdp-day_button {
+            color: #4f46e5 !important;
+            font-weight: 400 !important;
+            background-color: #e0e7ff;
+          }
+          
+          /* Selected Days (Start & End) - Blue Circle */
+          .compact-pills-calendar .rdp-selected .rdp-day_button,
+          .compact-pills-calendar .rdp-range_start .rdp-day_button,
+          .compact-pills-calendar .rdp-range_end .rdp-day_button,
+          .compact-pills-calendar .day-range-start .rdp-day_button,
+          .compact-pills-calendar .day-range-end .rdp-day_button {
+            background-color: #3b82f6 !important;
+            color: white !important;
+            font-weight: 400 !important;
+            font-size: 13px !important;
+          }
+          
+          /* Range Middle - Light Grey Circle */
+          .compact-pills-calendar .rdp-range_middle .rdp-day_button,
+          .compact-pills-calendar .day-range-middle .rdp-day_button {
+            background-color: #e5e7eb !important;
+            color: #1f2937 !important;
+            font-weight: 400 !important;
+            font-size: 13px !important;
+            border-radius: 50% !important;
+          }
+          
+          /* Override hover for selected states */
+          .compact-pills-calendar .rdp-selected .rdp-day_button:hover,
+          .compact-pills-calendar .rdp-range_start .rdp-day_button:hover,
+          .compact-pills-calendar .rdp-range_end .rdp-day_button:hover {
+            background-color: #2563eb !important;
+          }
+          
+          .compact-pills-calendar .rdp-range_middle .rdp-day_button:hover {
+            background-color: #d1d5db !important;
+          }
+          
+          /* Outside Days */
+          .compact-pills-calendar .rdp-outside .rdp-day_button,
+          .compact-pills-calendar .rdp-day_outside .rdp-day_button {
+            color: #d1d5db;
+            opacity: 0.5;
+          }
+          
+          /* Hidden Days */
+          .compact-pills-calendar .rdp-hidden,
+          .compact-pills-calendar .rdp-day_hidden {
+            visibility: hidden;
+          }
+          
+          /* Focus States */
+          .compact-pills-calendar .rdp-day_button:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+          }
         `}</style>
       </Popover.Content>
     </Popover>

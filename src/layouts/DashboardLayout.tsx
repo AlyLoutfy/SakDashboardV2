@@ -6,10 +6,10 @@ const DashboardLayout = () => {
   const isFullHeightPage = location.pathname.startsWith("/integrations") || location.pathname.startsWith("/reports") || location.pathname.startsWith("/payment-plans");
 
   return (
-    <div className="flex h-screen w-full bg-gray-100 overflow-hidden">
+    <div className="flex h-screen w-full bg-white overflow-hidden">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto w-full relative h-full p-4">
-        <div className={`${isFullHeightPage ? "h-full" : "min-h-full"} w-full`}>
+      <main className="flex-1 w-full relative h-full overflow-hidden flex flex-col">
+        <div className="w-full h-full flex-1 overflow-hidden relative">
           <Outlet />
         </div>
       </main>

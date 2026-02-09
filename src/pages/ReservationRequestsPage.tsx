@@ -1209,7 +1209,7 @@ const ReservationRequestsPage = () => {
   const [selectedLead, setSelectedLead] = useState<ReservationRequest | null>(null);
   const [selectedUnit, setSelectedUnit] = useState<ReservationRequest | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 100;
+  const [itemsPerPage, setItemsPerPage] = useState(100);
 
   // Location filter states
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
@@ -1361,9 +1361,9 @@ const ReservationRequestsPage = () => {
   ];
 
   return (
-    <div className="h-[calc(100vh-2rem)] w-full bg-white text-gray-900 rounded-xl overflow-hidden font-sans border border-gray-200 flex flex-col shadow-sm">
+    <div className="h-full w-full bg-white text-gray-900 overflow-hidden font-sans flex flex-col">
       {/* Header */}
-      <div className="h-14 border-b border-gray-200 flex items-center justify-between px-4 bg-gray-50/50 shrink-0">
+      <div className="h-14 border-b border-gray-200 flex items-center justify-between px-4 bg-white shrink-0">
         <div className="flex items-center gap-2 text-gray-500">
           <Building2 size={20} />
           <span className="text-base font-bold text-gray-900 leading-none">Reservation Requests</span>
@@ -1392,9 +1392,9 @@ const ReservationRequestsPage = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col overflow-hidden p-4">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Status Filter Tabs */}
-        <div className="flex gap-6 mb-2 border-b border-gray-100 overflow-x-auto shrink-0 px-1">
+        <div className="flex gap-6 mb-2 border-b border-gray-100 overflow-x-auto shrink-0 px-4 pt-4">
           {statusFilters.map((filter) => {
             const isActive = filterStatus === filter.key;
             // Highlight "Pending Your Approval" specifically
@@ -1443,7 +1443,7 @@ const ReservationRequestsPage = () => {
         </div>
 
         {/* Filters Bar */}
-        <div className="flex flex-wrap gap-3 mb-3 items-center shrink-0">
+        <div className="flex flex-wrap gap-3 mb-3 items-center shrink-0 px-4">
           {/* Search by Unit ID */}
           <div className="relative flex-1 min-w-[240px]">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -1565,11 +1565,11 @@ const ReservationRequestsPage = () => {
         </div>
 
         {/* Table Container - Scrollable */}
-        <div className="flex-1 flex flex-col min-h-0 bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <div className="flex-1 overflow-auto">
+        <div className="flex-1 flex flex-col min-h-0 bg-white overflow-hidden px-4 pb-2">
+          <div className="flex-1 overflow-auto border border-gray-200 rounded-2xl">
             <table className="w-full min-w-[1500px] table-fixed">
-              <thead>
-                <tr className="bg-gray-50/80 border-b border-gray-200 h-9">
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-gray-50 border-b border-gray-200 h-9">
                   <th className="py-1 px-2 pl-4 w-12 text-left align-middle">
                     <div className="flex items-center">
                       <input type="checkbox" onChange={handleSelectAll} checked={paginatedRequests.length > 0 && selectedIds.size === paginatedRequests.length} className="rounded border-gray-300 text-gray-900 focus:ring-gray-900 cursor-pointer w-4 h-4" />
@@ -1729,10 +1729,35 @@ const ReservationRequestsPage = () => {
           </div>
 
           {/* Pagination - Fixed at bottom */}
-          <div className="flex items-center justify-between px-4 py-1 border-t border-gray-200 bg-gray-50/50 shrink-0">
+          <div className="flex items-center justify-between px-4 py-2 mt-3 bg-gray-50/50 shrink-0 border-t border-gray-100">
+            {/* Left: Items per page */}
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span className="font-medium">Rows per page:</span>
+              <div className="relative">
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 py-1 pl-2 pr-8 appearance-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                  <option value={500}>500</option>
+                  <option value={1000}>1000</option>
+                </select>
+                <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Center: Page Controls */}
             <div className="flex items-center gap-2">
-              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-1 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:hover:bg-transparent">
-                <ChevronLeft size={14} className="text-gray-500" />
+              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-1.5 hover:bg-white hover:shadow-sm hover:border-gray-200 border border-transparent rounded-lg transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:shadow-none disabled:border-transparent">
+                <ChevronLeft size={16} className="text-gray-600" />
               </button>
 
               {/* Page Numbers */}
@@ -1749,27 +1774,28 @@ const ReservationRequestsPage = () => {
                   }
                   if (pageNum > totalPages) return null;
                   return (
-                    <button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`w-7 h-7 rounded-lg text-xs font-medium transition-colors ${currentPage === pageNum ? "bg-gray-900 text-white" : "text-gray-600 hover:bg-gray-100"}`}>
+                    <button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${currentPage === pageNum ? "bg-emerald-500 text-white shadow-md shadow-emerald-200" : "text-gray-600 hover:bg-white hover:shadow-sm hover:border-gray-200 border border-transparent"}`}>
                       {pageNum}
                     </button>
                   );
                 })}
                 {totalPages > 5 && currentPage < totalPages - 2 && (
                   <>
-                    <span className="text-gray-400 px-1">...</span>
-                    <button onClick={() => setCurrentPage(totalPages)} className="w-7 h-7 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-100">
+                    <span className="text-gray-400 px-1 font-bold">...</span>
+                    <button onClick={() => setCurrentPage(totalPages)} className="w-8 h-8 rounded-lg text-xs font-bold text-gray-600 hover:bg-white hover:shadow-sm hover:border-gray-200 border border-transparent">
                       {totalPages}
                     </button>
                   </>
                 )}
               </div>
 
-              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || totalPages === 0} className="p-1 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:hover:bg-transparent">
-                <ChevronRight size={14} className="text-gray-500" />
+              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || totalPages === 0} className="p-1.5 hover:bg-white hover:shadow-sm hover:border-gray-200 border border-transparent rounded-lg transition-all disabled:opacity-30 disabled:hover:bg-transparent disabled:shadow-none disabled:border-transparent">
+                <ChevronRight size={16} className="text-gray-600" />
               </button>
             </div>
 
-            <div className="text-xs text-gray-500 font-medium">
+            {/* Right: Total Results */}
+            <div className="text-xs text-gray-500 font-medium w-[140px] text-right">
               {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, filteredRequests.length)} of {filteredRequests.length} Results
             </div>
           </div>

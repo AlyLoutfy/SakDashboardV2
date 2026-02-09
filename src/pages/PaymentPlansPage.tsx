@@ -84,7 +84,7 @@ const PaymentPlansPage = () => {
   // List View
   if (!isEditing) {
     return (
-      <div className="h-full w-full bg-white text-gray-900 rounded-xl overflow-hidden font-sans border border-gray-200 flex flex-col shadow-sm">
+      <div className="h-full w-full bg-white text-gray-900 overflow-hidden font-sans flex flex-col">
         {/* Top Bar - matching integrations page style */}
         <div className="h-14 border-b border-gray-200 flex items-center justify-between px-4 bg-gray-50/50 shrink-0">
           <div className="flex items-center gap-2 text-gray-500">
@@ -141,7 +141,7 @@ const PaymentPlansPage = () => {
 
   // Editing/Creating view
   return (
-    <div className="h-full w-full bg-white text-gray-900 rounded-xl overflow-hidden font-sans border border-gray-200 flex flex-col shadow-sm">
+    <div className="h-full w-full bg-white text-gray-900 overflow-hidden font-sans flex flex-col">
       {/* Top Bar - matching integrations page style */}
       <div className="h-14 border-b border-gray-200 flex items-center justify-between px-4 bg-gray-50/50 shrink-0">
         <div className="flex items-center gap-3">
