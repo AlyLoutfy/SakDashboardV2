@@ -1,73 +1,109 @@
-# React + TypeScript + Vite
+# SAK Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A monorepo containing the SAK Dashboard and Sales Tool applications.
 
-Currently, two official plugins are available:
+## 📁 Project Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+sak-platform/
+├── apps/
+│   ├── dashboard/          # Main Dashboard CRM application
+│   └── sales/              # Sales Tool for reservations
+├── packages/
+│   └── shared/             # Shared components and utilities (future use)
+└── package.json            # Root workspace configuration
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🚀 Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Prerequisites
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js 18+
+- npm 9+
+
+### Installation
+
+```bash
+npm install
 ```
+
+### Development
+
+Run the Dashboard:
+
+```bash
+npm run dev
+```
+
+Run the Sales Tool:
+
+```bash
+npm run dev:sales
+```
+
+Run both apps simultaneously:
+
+```bash
+npm run dev:all
+```
+
+### Building for Production
+
+Build all apps:
+
+```bash
+npm run build
+```
+
+Build Dashboard only:
+
+```bash
+npm run build:dashboard
+```
+
+Build Sales Tool only:
+
+```bash
+npm run build:sales
+```
+
+### Deployment
+
+Deploy Dashboard to GitHub Pages:
+
+```bash
+npm run deploy
+```
+
+## 🛠 Tech Stack
+
+- **Framework**: React 19 + Vite
+- **Styling**: Tailwind CSS v4 + HeroUI v3 (beta)
+- **State**: Zustand
+- **Routing**: React Router v7
+- **Animations**: Framer Motion
+
+## 📱 Applications
+
+### Dashboard (@sak/dashboard)
+
+The main CRM dashboard featuring:
+
+- Integration management
+- Payment plans
+- Reservation requests
+- Reports
+- Blocking requests
+
+### Sales Tool (@sak/sales)
+
+A standalone sales tool for:
+
+- Unit details viewing
+- Creating reservations
+- Payment plan builder
+- Managing reservations
+
+## 📄 License
+
+Private - All rights reserved.
