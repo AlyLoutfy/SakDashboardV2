@@ -1,5 +1,4 @@
 import { Building2, MapPin, Maximize2, Bed, Bath, Car, Check, ArrowRight } from "lucide-react";
-import { Button } from "@heroui/react";
 import { useSalesStore } from "../store/salesStore";
 import ReservationDrawer from "../components/ReservationDrawer";
 
@@ -81,12 +80,12 @@ const UnitDetailsPage = () => {
               <p className="text-3xl md:text-4xl font-bold text-white mb-1">{formatCurrency(dummyUnit.price)}</p>
               <p className="text-slate-500 text-sm mb-6">{formatCurrency(dummyUnit.pricePerMeter)} / m²</p>
 
-              <Button onPress={handleReserve} className="bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105">
+              <button onClick={handleReserve} className="bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105">
                 <span className="flex items-center gap-2">
                   Reserve Now
                   <ArrowRight size={18} />
                 </span>
-              </Button>
+              </button>
             </div>
           </div>
         </div>

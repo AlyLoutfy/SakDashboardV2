@@ -1,5 +1,4 @@
 import { X, User, Phone, Mail, FileText, ChevronDown, Plus, Trash2, Calendar, Percent, DollarSign } from "lucide-react";
-import { Button, Input } from "@heroui/react";
 import { useSalesStore } from "../store/salesStore";
 import type { PaymentPlan, Installment } from "../store/salesStore";
 import { useState, useEffect } from "react";
@@ -176,17 +175,17 @@ const ReservationDrawer = ({ isOpen, unitPrice }: ReservationDrawerProps) => {
                 <div className="space-y-3">
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <Input placeholder="Client Name" value={currentReservation?.client.name || ""} onChange={(e) => updateCurrentClient({ name: e.target.value })} className="pl-10" />
+                    <input placeholder="Client Name" value={currentReservation?.client.name || ""} onChange={(e) => updateCurrentClient({ name: e.target.value })} className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm" />
                   </div>
 
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <Input placeholder="Phone Number" value={currentReservation?.client.phone || ""} onChange={(e) => updateCurrentClient({ phone: e.target.value })} className="pl-10" />
+                    <input placeholder="Phone Number" value={currentReservation?.client.phone || ""} onChange={(e) => updateCurrentClient({ phone: e.target.value })} className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm" />
                   </div>
 
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <Input placeholder="Email Address" type="email" value={currentReservation?.client.email || ""} onChange={(e) => updateCurrentClient({ email: e.target.value })} className="pl-10" />
+                    <input placeholder="Email Address" type="email" value={currentReservation?.client.email || ""} onChange={(e) => updateCurrentClient({ email: e.target.value })} className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm" />
                   </div>
 
                   <div className="relative">
@@ -302,12 +301,12 @@ const ReservationDrawer = ({ isOpen, unitPrice }: ReservationDrawerProps) => {
 
             {/* Footer */}
             <div className="px-6 py-4 border-t border-slate-200 flex items-center gap-3">
-              <Button variant="ghost" onPress={closeReservationDrawer} className="flex-1">
+              <button onClick={closeReservationDrawer} className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium transition-colors">
                 Cancel
-              </Button>
-              <Button onPress={handleSubmit} className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold">
+              </button>
+              <button onClick={handleSubmit} className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:opacity-90 transition-opacity">
                 {editingReservationId ? "Save Changes" : "Create Reservation"}
-              </Button>
+              </button>
             </div>
           </motion.div>
         </>

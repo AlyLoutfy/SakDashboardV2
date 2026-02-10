@@ -1,5 +1,4 @@
 import { ClipboardList, Check, X, Clock, Edit3, Eye } from "lucide-react";
-import { Button } from "@heroui/react";
 import { useSalesStore } from "../store/salesStore";
 import ReservationDrawer from "../components/ReservationDrawer";
 import { format } from "date-fns";
@@ -118,9 +117,9 @@ const MyReservationsPage = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="sm" onPress={() => editReservation(reservation.id)} className="min-w-0 px-3">
+                        <button onClick={() => editReservation(reservation.id)} className="min-w-0 px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors">
                           <Edit3 size={14} />
-                        </Button>
+                        </button>
                       </div>
                     </td>
                   </tr>
