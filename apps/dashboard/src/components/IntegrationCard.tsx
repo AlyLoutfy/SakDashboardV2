@@ -1,4 +1,4 @@
-import { Card, Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import { CheckCircle2, History, AlertCircle, Zap } from "lucide-react";
 import type { IntegrationData } from "../store/integrationStore";
 
@@ -29,7 +29,7 @@ const IntegrationCard = ({ name, icon, data, onConnect, onManage, isPending, cat
   }
 
   return (
-    <Card className={`h-full min-h-[140px] flex flex-col bg-white border ${statusColor} p-4 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden`}>
+    <div className={`h-full min-h-[140px] flex flex-col bg-white border ${statusColor} p-4 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 relative overflow-hidden`}>
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div className={`${iconBg} ${iconBg ? "p-2" : "p-0"} rounded-lg text-gray-700 flex items-center justify-center`}>{icon}</div>
@@ -93,25 +93,25 @@ const IntegrationCard = ({ name, icon, data, onConnect, onManage, isPending, cat
 
       <div className="mt-auto pt-2">
         {isConnected ? (
-          <Button fullWidth variant="secondary" className="bg-white border-2 border-emerald-500 text-emerald-700 hover:bg-emerald-50 font-medium rounded-lg h-9 text-xs" onPress={onManage}>
+          <Button variant="secondary" className="w-full bg-white border-2 border-emerald-500 text-emerald-700 hover:bg-emerald-50 font-medium rounded-lg h-9 text-xs" onClick={onManage}>
             Configure Settings
           </Button>
         ) : isExpired ? (
           <div className="flex gap-2">
-            <Button className="flex-1 bg-amber-500 text-white font-medium rounded-lg hover:bg-amber-600 h-9 text-xs" onPress={onConnect}>
+            <Button className="flex-1 bg-amber-500 text-white font-medium rounded-lg hover:bg-amber-600 h-9 text-xs" onClick={onConnect}>
               Renew Session
             </Button>
-            <Button variant="ghost" className="font-medium border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 h-9 text-xs" onPress={onManage}>
+            <Button variant="ghost" className="font-medium border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 h-9 text-xs" onClick={onManage}>
               Configure
             </Button>
           </div>
         ) : (
-          <Button fullWidth className="bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 shadow-sm h-9 text-xs" onPress={onConnect} isPending={isPending}>
+          <Button className="w-full bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 shadow-sm h-9 text-xs" onClick={onConnect}>
             {isPending ? "Connecting..." : "Enable Integration"}
           </Button>
         )}
       </div>
-    </Card>
+    </div>
   );
 };
 

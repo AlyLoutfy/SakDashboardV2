@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import { Printer, Download, Building2, User, MapPin, FileText } from "lucide-react";
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import type { PaymentPlan, Installment } from "../../store/paymentPlansStore";
 import { formatCurrency, formatDate, calculatePlanSummary } from "../../store/paymentPlansStore";
 import { InstallmentRowCompact } from "./InstallmentRow";
@@ -26,7 +26,7 @@ const PaymentPlanTemplate = ({ plan, onUpdatePlan, onUpdateInstallment: _onUpdat
       <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
         <h3 className="font-semibold text-gray-900">Payment Plan Preview</h3>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm" onPress={handlePrint} className="gap-2 text-gray-600">
+          <Button variant="secondary" size="sm" onClick={handlePrint} className="gap-2 text-gray-600">
             <Printer size={16} />
             Print
           </Button>

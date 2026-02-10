@@ -1,7 +1,7 @@
 {
   "name": "sak-platform",
-  "private": true,
   "version": "0.0.1",
+  "private": true,
   "type": "module",
   "workspaces": [
     "packages/*",
@@ -9,17 +9,14 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspace=@sak/dashboard",
-    "dev:sales": "npm run dev --workspace=@sak/sales",
-    "dev:all": "npm run dev --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
-    "build:dashboard": "npm run build --workspace=@sak/dashboard",
-    "build:sales": "npm run build --workspace=@sak/sales",
-    "lint": "npm run lint --workspaces --if-present",
+    "build": "npm run build --workspace=@sak/dashboard",
+    "lint": "npm run lint --workspace=@sak/dashboard",
     "preview": "npm run preview --workspace=@sak/dashboard",
-    "predeploy": "npm run build:dashboard",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d apps/dashboard/dist"
   },
   "devDependencies": {
-    "gh-pages": "^6.3.0"
+    "gh-pages": "^6.3.0",
+    "shadcn": "^3.8.4"
   }
 }

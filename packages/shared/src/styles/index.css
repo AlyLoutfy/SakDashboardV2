@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@heroui/styles";
 
 :root {
   /* Background & Foreground */
@@ -39,4 +38,3 @@ body {
   --color-background: #0f172a;
   --color-foreground: #f8fafc;
 }
-

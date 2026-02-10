@@ -1,4 +1,4 @@
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import { AlertTriangle, WifiOff, RefreshCw, ArrowLeft, XCircle, AlertCircle } from "lucide-react";
 
 const FailedDesignWrapper = ({ title, children }: { title: string; children: React.ReactNode }) => (

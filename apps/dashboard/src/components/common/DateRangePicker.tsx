@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Popover } from "@heroui/react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { format, isSameDay, addMonths, subMonths } from "date-fns";
 import { Calendar as CalendarIcon, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker, type DateRange } from "react-day-picker";
@@ -48,8 +48,8 @@ export default function DateRangePicker({ value, onChange, className, placeholde
   const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
   return (
-    <Popover isOpen={isOpen} onOpenChange={setIsOpen}>
-      <Popover.Trigger>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
         <div className={`relative cursor-pointer group ${className}`}>
           {/* Trigger Button - styled to match other filters exactly */}
           <div className="flex items-center gap-2 px-2 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-600 hover:bg-gray-50 bg-white transition-colors h-full w-full">
@@ -64,10 +64,10 @@ export default function DateRangePicker({ value, onChange, className, placeholde
             )}
           </div>
         </div>
-      </Popover.Trigger>
+      </PopoverTrigger>
 
       {/* Popover Content */}
-      <Popover.Content placement="bottom start" className="p-0 bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden z-[100] w-auto">
+      <PopoverContent side="bottom" align="start" className="p-0 bg-white border border-gray-100 rounded-2xl shadow-lg overflow-hidden z-[100] w-auto">
         <div className="p-4 space-y-3">
           {/* Custom Header */}
           <div className="flex items-center justify-between px-2 mb-1">
@@ -273,7 +273,7 @@ export default function DateRangePicker({ value, onChange, className, placeholde
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
           }
         `}</style>
-      </Popover.Content>
+      </PopoverContent>
     </Popover>
   );
 }

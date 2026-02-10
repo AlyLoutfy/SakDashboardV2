@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Shield, Clock, AlertTriangle, RefreshCw, Building2, Timer, ChevronDown, Search, Filter, CheckCircle2, XCircle, Unlock } from "lucide-react";
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import { useBlockingRequestsStore } from "../store/blockingRequestsStore";
 import type { BlockingRequest, BlockingStatus } from "../store/blockingRequestsStore";
 import { motion, AnimatePresence } from "framer-motion";
@@ -102,11 +102,11 @@ const ExtendModal = ({ isOpen, onClose, onExtend, unitCode }: ExtendModalProps) 
         </div>
 
         <div className="flex gap-3">
-          <Button onPress={onClose} className="flex-1 bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium">
+          <Button onClick={onClose} className="flex-1 bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium">
             Cancel
           </Button>
           <Button
-            onPress={() => {
+            onClick={() => {
               onExtend(hours);
               onClose();
             }}
@@ -197,10 +197,10 @@ const BlockingRequestCard = ({ request, onApprove, onReject, onExtend, onRelease
       case "pending":
         return (
           <div className="flex gap-2 w-full">
-            <Button onPress={onApprove} className="flex-1 bg-emerald-500 text-white hover:bg-emerald-600 font-semibold h-9 rounded-lg shadow-sm transition-all hover:translate-y-[-1px]">
+            <Button onClick={onApprove} className="flex-1 bg-emerald-500 text-white hover:bg-emerald-600 font-semibold h-9 rounded-lg shadow-sm transition-all hover:translate-y-[-1px]">
               Approve
             </Button>
-            <Button onPress={onReject} className="flex-1 bg-white text-red-600 hover:bg-red-50 border border-gray-200 font-semibold h-9 rounded-lg transition-all hover:border-red-200">
+            <Button onClick={onReject} className="flex-1 bg-white text-red-600 hover:bg-red-50 border border-gray-200 font-semibold h-9 rounded-lg transition-all hover:border-red-200">
               Reject
             </Button>
           </div>
@@ -208,10 +208,10 @@ const BlockingRequestCard = ({ request, onApprove, onReject, onExtend, onRelease
       case "active":
         return (
           <div className="flex gap-2 w-full">
-            <Button onPress={onMarkReserved} className="flex-1 bg-emerald-500 text-white hover:bg-emerald-600 font-semibold h-9 rounded-lg shadow-sm transition-all hover:translate-y-[-1px]">
+            <Button onClick={onMarkReserved} className="flex-1 bg-emerald-500 text-white hover:bg-emerald-600 font-semibold h-9 rounded-lg shadow-sm transition-all hover:translate-y-[-1px]">
               Reserved
             </Button>
-            <Button onPress={onRelease} className="flex-1 bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 font-semibold h-9 rounded-lg transition-all hover:border-gray-300">
+            <Button onClick={onRelease} className="flex-1 bg-white text-gray-600 hover:bg-gray-50 border border-gray-200 font-semibold h-9 rounded-lg transition-all hover:border-gray-300">
               Cancel
             </Button>
           </div>
@@ -219,10 +219,10 @@ const BlockingRequestCard = ({ request, onApprove, onReject, onExtend, onRelease
       case "expired":
         return (
           <div className="flex gap-2 w-full">
-            <Button onPress={onExtend} className="flex-1 bg-emerald-500 text-white hover:bg-emerald-600 font-semibold h-9 rounded-lg shadow-sm transition-all hover:translate-y-[-1px]">
+            <Button onClick={onExtend} className="flex-1 bg-emerald-500 text-white hover:bg-emerald-600 font-semibold h-9 rounded-lg shadow-sm transition-all hover:translate-y-[-1px]">
               Extend
             </Button>
-            <Button onPress={onRelease} className="flex-1 bg-white text-red-600 hover:bg-red-50 border border-red-200 font-semibold h-9 rounded-lg transition-all hover:border-red-300">
+            <Button onClick={onRelease} className="flex-1 bg-white text-red-600 hover:bg-red-50 border border-red-200 font-semibold h-9 rounded-lg transition-all hover:border-red-300">
               Release
             </Button>
           </div>
@@ -415,7 +415,7 @@ const BlockingRequestsPage = () => {
           </div>
 
           <div className="relative">
-            <Button onPress={() => setShowFilters(!showFilters)} className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium h-10 px-4 rounded-xl">
+            <Button onClick={() => setShowFilters(!showFilters)} className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium h-10 px-4 rounded-xl">
               <Filter size={16} className="mr-2" />
               {filterStatus === "all" ? "All Requests" : filterStatus === "pending" ? "Pending" : filterStatus === "active" ? "Active" : filterStatus === "expired" ? "Expired" : "Completed"}
               <ChevronDown size={16} className="ml-2" />

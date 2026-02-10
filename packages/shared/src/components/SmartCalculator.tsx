@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { motion, Reorder, AnimatePresence } from "framer-motion";
 import { Calculator, Sparkles, Calendar, Trash2, GripVertical, Percent, DollarSign, Tag, Play, PlusCircle } from "lucide-react";
-import { Button } from "@heroui/react";
 import type { PaymentStage, PaymentType } from "../../store/paymentPlansStore";
 import { formatCurrency } from "../../store/paymentPlansStore";
 
@@ -231,10 +230,10 @@ export default function SmartCalculator({ basePrice, discount, onDiscountChange,
 
       {/* Footer */}
       <div className="pt-4 border-t border-gray-100">
-        <Button onPress={() => onGenerate(stages)} className="w-full bg-gray-900 text-white font-medium shadow-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed" isDisabled={stages.length === 0}>
+        <button onClick={() => onGenerate(stages)} className="w-full flex items-center justify-center py-3 rounded-xl bg-gray-900 text-white font-medium shadow-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled={stages.length === 0}>
           <Play size={16} className="mr-2" />
           Generate Plan
-        </Button>
+        </button>
       </div>
     </motion.div>
   );

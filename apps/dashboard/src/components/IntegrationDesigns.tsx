@@ -1,4 +1,5 @@
-import { Button, Chip } from "@heroui/react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Settings2, Zap, AlertCircle, Link2, Calendar, Clock, ArrowRight } from "lucide-react";
 
 // --- Shared Mock Data ---
@@ -159,9 +160,7 @@ const Design2 = ({ status }: DesignProps) => {
         )}
 
         <div className="mt-6">
-          <Button fullWidth className={`font-semibold border transition-all h-10 ${isConnected ? "bg-white/10 border-white/10 text-white hover:bg-white/20" : isExpired ? "bg-amber-500/20 border-amber-500/50 text-amber-200 hover:bg-amber-500/30" : "bg-blue-600 border-transparent text-white hover:bg-blue-500 shadow-lg shadow-blue-900/50"}`}>
-            {isConnected ? "Configure" : isExpired ? "Reconnect" : "Connect"}
-          </Button>
+          <Button className={`w-full font-semibold border transition-all h-10 ${isConnected ? "bg-white/10 border-white/10 text-white hover:bg-white/20" : isExpired ? "bg-amber-500/20 border-amber-500/50 text-amber-200 hover:bg-amber-500/30" : "bg-blue-600 border-transparent text-white hover:bg-blue-500 shadow-lg shadow-blue-900/50"}`}>{isConnected ? "Configure" : isExpired ? "Reconnect" : "Connect"}</Button>
         </div>
       </div>
     </div>
@@ -193,11 +192,7 @@ const Design3 = ({ status }: DesignProps) => {
               <SalesforceLogo size={22} mono />
             </div>
 
-            {(isConnected || isExpired) && (
-              <Chip size="sm" variant="soft" className={`border border-opacity-30 ${isConnected ? "text-emerald-400 border-emerald-400 bg-emerald-900/20" : "text-amber-400 border-amber-400 bg-amber-900/20"}`}>
-                {isConnected ? "Active" : "Expired"}
-              </Chip>
-            )}
+            {(isConnected || isExpired) && <Badge className={`border border-opacity-30 ${isConnected ? "text-emerald-400 border-emerald-400 bg-emerald-900/20" : "text-amber-400 border-amber-400 bg-amber-900/20"}`}>{isConnected ? "Active" : "Expired"}</Badge>}
           </div>
 
           <div className="mt-4 mb-2 z-10">
@@ -300,9 +295,7 @@ const Design5 = ({ status }: DesignProps) => {
       )}
 
       <div className="relative z-10 mt-auto">
-        <Button fullWidth className="bg-white text-black hover:bg-gray-200 border-none rounded-xl font-medium shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-          {isConnected ? "Settings" : "Connect"}
-        </Button>
+        <Button className="w-full bg-white text-black hover:bg-gray-200 border-none rounded-xl font-medium shadow-[0_0_20px_rgba(255,255,255,0.1)]">{isConnected ? "Settings" : "Connect"}</Button>
       </div>
     </div>
   );

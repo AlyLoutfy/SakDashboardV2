@@ -3,7 +3,7 @@ import { Linkedin, Facebook, Mail, Workflow } from "lucide-react";
 import IntegrationCard from "../components/IntegrationCard";
 import MappingSetup from "../components/MappingSetup";
 import { useIntegrationStore } from "../store/integrationStore";
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 
 const WhatsAppIcon = ({ size = 24 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -119,10 +119,10 @@ const IntegrationsPage = () => {
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Connection Failed</h2>
         <p className="text-gray-500 max-w-md mb-8">We could not establish a connection. Please check your permissions and try again.</p>
         <div className="flex gap-3">
-          <Button onPress={handleBack} className="bg-transparent border border-gray-200 text-gray-700 font-medium hover:bg-gray-50">
+          <Button onClick={handleBack} className="bg-transparent border border-gray-200 text-gray-700 font-medium hover:bg-gray-50">
             Back to Integrations
           </Button>
-          <Button onPress={() => handleConnect(activeIntegrationId)} className="bg-gray-900 text-white font-medium shadow-lg shadow-gray-200 hover:bg-gray-800">
+          <Button onClick={() => handleConnect(activeIntegrationId)} className="bg-gray-900 text-white font-medium shadow-lg shadow-gray-200 hover:bg-gray-800">
             Try Again
           </Button>
         </div>

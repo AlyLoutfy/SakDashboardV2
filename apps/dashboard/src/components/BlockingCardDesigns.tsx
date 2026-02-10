@@ -1,5 +1,5 @@
 import { Building2, Clock, Timer, User, Briefcase, FileText, Quote, MessageSquare, Users } from "lucide-react";
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import type { BlockingRequest } from "../store/blockingRequestsStore";
 
 // --- Mock Data ---

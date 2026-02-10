@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { ChevronUp, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 import { formatCurrency, type PlanValidation } from "../../store/paymentPlansStore";
-import { Popover, PopoverTrigger, PopoverContent } from "@heroui/react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 interface LiveSummaryFooterProps {
   summary: any; // Using the return type of calculatePlanSummary
@@ -27,7 +27,7 @@ export default function LiveSummaryFooter({ summary, validation }: LiveSummaryFo
         {/* Left: Status & Validation */}
         <div className="flex items-center gap-4">
           <Popover>
-            <PopoverTrigger>
+            <PopoverTrigger asChild>
               <button className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${statusColor} transition-all hover:brightness-95`}>
                 <StatusIcon size={16} />
                 <span className="text-xs font-bold">{validation.errors.length > 0 ? "Invalid Plan" : validation.warnings.length > 0 ? "Warnings Found" : "Valid Plan"}</span>

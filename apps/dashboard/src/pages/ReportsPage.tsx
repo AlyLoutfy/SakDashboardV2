@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { LayoutGrid, Download, Plus, X, Search } from "lucide-react";
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import { useReportsStore } from "../store/reportsStore";
 import type { DataSource } from "../store/reportsStore";
 
@@ -175,7 +175,7 @@ const ReportsPage = () => {
                 ))
               )}
 
-              <Button variant="ghost" className="w-full text-gray-500 border border-dashed border-gray-200 hover:border-gray-300 hover:text-gray-700 h-10 group" onPress={handleAddFilter}>
+              <Button variant="ghost" className="w-full text-gray-500 border border-dashed border-gray-200 hover:border-gray-300 hover:text-gray-700 h-10 group" onClick={handleAddFilter}>
                 <Plus size={16} className="mr-2 group-hover:text-emerald-500 transition-colors" /> Add Filter
               </Button>
             </div>

@@ -1,4 +1,6 @@
-import { Button, Checkbox, Chip } from "@heroui/react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { FileText, Filter, Download, Columns, Search, Plus, MoreHorizontal, ChevronDown, ArrowRight, LayoutGrid, Table as TableIcon, PieChart, Settings2, Share2, RefreshCw, X } from "lucide-react";
 
 // --- Shared Mock Data ---
@@ -33,7 +35,7 @@ const MockTable = ({ minimal = false, density = "normal" }: { minimal?: boolean;
             </td>
             {!minimal && (
               <td className="px-4 py-3 text-right">
-                <Button size="sm" isIconOnly variant="ghost">
+                <Button size="icon" variant="ghost">
                   <MoreHorizontal size={16} />
                 </Button>
               </td>
@@ -144,16 +146,16 @@ const Design2 = () => (
               <div className="text-xs font-semibold text-gray-400 uppercase mb-2">Toggle Columns</div>
               {["Unit Code", "Type", "Price", "Status"].map((col) => (
                 <div key={col} className="flex items-center gap-2 py-1.5">
-                  <Checkbox defaultSelected />
+                  <Checkbox defaultChecked />
                   <span className="text-sm text-gray-700 dark:text-gray-300">{col}</span>
                 </div>
               ))}
             </div>
           </div>
-          <Button isIconOnly size="sm" variant="ghost" className="rounded-full">
+          <Button size="icon" variant="ghost" className="rounded-full">
             <Filter size={18} />
           </Button>
-          <Button isIconOnly size="sm" variant="ghost" className="rounded-full">
+          <Button size="icon" variant="ghost" className="rounded-full">
             <Settings2 size={18} />
           </Button>
         </div>
@@ -193,9 +195,9 @@ const Design3 = () => (
       </div>
       <div className="px-4 flex items-center gap-2">
         <span className="text-xs text-gray-500">Source:</span>
-        <Chip size="sm" className="bg-white border border-gray-200">
+        <Badge variant="outline" className="bg-white border border-gray-200">
           Units
-        </Chip>
+        </Badge>
       </div>
     </div>
     <div className="h-8 border-b border-gray-200 dark:border-zinc-700 bg-white dark:bg-black flex items-center px-2 shrink-0">

@@ -1,7 +1,7 @@
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ChevronUp, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 import { formatCurrency, type PlanValidation } from "../../store/paymentPlansStore";
-import { Popover, PopoverTrigger, PopoverContent } from "@heroui/react";
 
 interface LiveSummaryFooterProps {
   summary: any; // Using the return type of calculatePlanSummary
@@ -10,6 +10,18 @@ interface LiveSummaryFooterProps {
 
 export default function LiveSummaryFooter({ summary, validation }: LiveSummaryFooterProps) {
   const { priceAfterDiscount, totalInstallmentsCreated, remainingToFinance, downPaymentAmount } = summary;
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setIsPopoverOpen(false);
+      }
+    };
+    if (isPopoverOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isPopoverOpen]);
 
   // Coverage check
   const stillNeeded = remainingToFinance - totalInstallmentsCreated;
@@ -26,36 +38,36 @@ export default function LiveSummaryFooter({ summary, validation }: LiveSummaryFo
       <div className="flex items-center justify-between gap-6">
         {/* Left: Status & Validation */}
         <div className="flex items-center gap-4">
-          <Popover>
-            <PopoverTrigger>
-              <button className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${statusColor} transition-all hover:brightness-95`}>
-                <StatusIcon size={16} />
-                <span className="text-xs font-bold">{validation.errors.length > 0 ? "Invalid Plan" : validation.warnings.length > 0 ? "Warnings Found" : "Valid Plan"}</span>
-                {(validation.errors.length > 0 || validation.warnings.length > 0) && <div className="bg-white/50 px-1.5 rounded-md text-[10px] font-bold">{validation.errors.length + validation.warnings.length}</div>}
-                <ChevronUp size={14} />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-4">
-              <div className="space-y-3">
-                <h4 className="font-bold text-gray-900 flex items-center gap-2">System Validation</h4>
-                {validation.errors.length === 0 && validation.warnings.length === 0 && <p className="text-sm text-gray-500">All checks passed successfully.</p>}
-                <div className="space-y-2">
-                  {validation.errors.map((err: string, i: number) => (
-                    <div key={i} className="flex gap-2 text-sm text-red-600 bg-red-50 p-2 rounded-lg">
-                      <XCircle size={16} className="shrink-0 mt-0.5" />
-                      <span>{err}</span>
-                    </div>
-                  ))}
-                  {validation.warnings.map((warn: string, i: number) => (
-                    <div key={i} className="flex gap-2 text-sm text-amber-600 bg-amber-50 p-2 rounded-lg">
-                      <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-                      <span>{warn}</span>
-                    </div>
-                  ))}
+          <div className="relative" ref={popoverRef}>
+            <button onClick={() => setIsPopoverOpen(!isPopoverOpen)} className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${statusColor} transition-all hover:brightness-95`}>
+              <StatusIcon size={16} />
+              <span className="text-xs font-bold">{validation.errors.length > 0 ? "Invalid Plan" : validation.warnings.length > 0 ? "Warnings Found" : "Valid Plan"}</span>
+              {(validation.errors.length > 0 || validation.warnings.length > 0) && <div className="bg-white/50 px-1.5 rounded-md text-[10px] font-bold">{validation.errors.length + validation.warnings.length}</div>}
+              <ChevronUp size={14} />
+            </button>
+            {isPopoverOpen && (
+              <div className="absolute bottom-full left-0 mb-2 w-80 p-4 bg-white rounded-xl border border-gray-200 shadow-lg z-50">
+                <div className="space-y-3">
+                  <h4 className="font-bold text-gray-900 flex items-center gap-2">System Validation</h4>
+                  {validation.errors.length === 0 && validation.warnings.length === 0 && <p className="text-sm text-gray-500">All checks passed successfully.</p>}
+                  <div className="space-y-2">
+                    {validation.errors.map((err: string, i: number) => (
+                      <div key={i} className="flex gap-2 text-sm text-red-600 bg-red-50 p-2 rounded-lg">
+                        <XCircle size={16} className="shrink-0 mt-0.5" />
+                        <span>{err}</span>
+                      </div>
+                    ))}
+                    {validation.warnings.map((warn: string, i: number) => (
+                      <div key={i} className="flex gap-2 text-sm text-amber-600 bg-amber-50 p-2 rounded-lg">
+                        <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+                        <span>{warn}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </PopoverContent>
-          </Popover>
+            )}
+          </div>
         </div>
 
         {/* Middle: Coverage Progress */}

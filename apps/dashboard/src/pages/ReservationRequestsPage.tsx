@@ -1,7 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
-import { Button, Tooltip, Dropdown } from "@heroui/react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, MoreVertical, FileText, Upload, Users, Eye, FileCheck, Download, User, Building2, Check, X, Clock, AlertCircle, UserCheck } from "lucide-react";
+import { Search, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, MoreVertical, FileText, Upload, Users, Eye, FileCheck, Download, User, Building2, Check, X, Clock, AlertCircle, UserCheck, Image as LucideImage, RotateCw, Maximize2, Edit } from "lucide-react";
+import { useSalesStore } from "../store/salesStore";
+import ReservationDrawer from "../components/sales/ReservationDrawer";
 import { useReservationRequestsStore, type ReservationRequest, type ReservationStatus, type ApprovalStep, type Approver } from "../store/reservationRequestsStore";
 import DateRangePicker from "../components/common/DateRangePicker";
 import { type DateRange } from "react-day-picker";
@@ -132,6 +136,113 @@ interface ApprovalFlowModalProps {
   onCreateContract: (requestId: string, createdBy: Approver) => void;
 }
 
+// Helper Component for File Viewing (Accordion Style)
+const AccordionFileViewer = ({ label, filename }: { label: string; filename: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [rotation, setRotation] = useState(0);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const isImage = filename.match(/\.(jpg|jpeg|png)$/i);
+
+  const handleRotate = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRotation((prev) => (prev + 90) % 360);
+  };
+
+  const toggleFullScreen = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setIsFullScreen(!isFullScreen);
+  };
+
+  return (
+    <>
+      <div className="border-b border-gray-100 last:border-0 bg-white group hover:bg-gray-50/50 transition-colors">
+        <div className="flex justify-between items-center px-4 py-3 cursor-pointer select-none" onClick={() => setIsOpen(!isOpen)}>
+          {/* Left: Label */}
+          <span className="text-[11px] font-medium text-gray-500 w-1/3 group-hover:text-gray-700 transition-colors truncate" title={label}>
+            {label}
+          </span>
+
+          {/* Right: Generic View + Chevron */}
+          <div className="flex items-center justify-end gap-3 flex-1">
+            <div className="flex items-center gap-2 text-right">
+              {isImage ? <LucideImage size={14} className="text-blue-500" /> : <FileText size={14} className="text-red-500" />}
+              <span className={`text-xs font-semibold text-gray-900 ${isOpen ? "text-blue-600" : ""}`}>View File</span>
+            </div>
+
+            <div className={`p-1 rounded-full text-gray-400 group-hover:text-gray-600 transition-all duration-300 ${isOpen ? "rotate-180 text-blue-500 bg-blue-50" : ""}`}>
+              <ChevronDown size={14} />
+            </div>
+          </div>
+        </div>
+
+        <AnimatePresence initial={false}>
+          {isOpen && (
+            <motion.div key="accordion-content" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3, ease: "easeInOut" }} className="overflow-hidden">
+              {/* Content Area */}
+              <div className="px-4 pb-4 pt-0">
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col items-center justify-center relative shadow-inner">
+                  {isImage ? (
+                    <>
+                      <div className="relative overflow-hidden transition-all duration-300 bg-white shadow-sm rounded-lg border border-gray-100 p-1 cursor-zoom-in group/image" onClick={() => setIsFullScreen(true)}>
+                        <div className="absolute inset-0 bg-black/0 group-hover/image:bg-black/5 transition-colors z-10 flex items-center justify-center">
+                          <Maximize2 size={24} className="text-white opacity-0 group-hover/image:opacity-100 drop-shadow-md transition-opacity" />
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1562240020-ce31ccb0fa7d?q=80&w=800&auto=format&fit=crop" alt={label} className="max-h-[300px] object-contain transition-transform duration-300 rounded" style={{ transform: `rotate(${rotation}deg)` }} />
+                      </div>
+
+                      <div className="flex gap-2 mt-4 w-full justify-center">
+                        <button onClick={handleRotate} className="flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm active:scale-95">
+                          <RotateCw size={14} /> Rotate
+                        </button>
+                        <button className="flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-50 hover:text-gray-900 transition-all shadow-sm active:scale-95">
+                          <Download size={14} /> Download
+                        </button>
+                        <button onClick={toggleFullScreen} className="flex items-center gap-1.5 px-4 py-2 bg-blue-50 border border-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-100 transition-all shadow-sm active:scale-95">
+                          <Maximize2 size={14} /> Full Screen
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center text-center py-4">
+                      <FileText size={32} className="text-gray-300 mb-2" />
+                      <span className="text-xs font-medium text-gray-500 mb-3">Preview not available for PDF</span>
+                      <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors shadow-sm">
+                        <Download size={12} /> Download Document
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <AnimatePresence>
+        {isFullScreen && (
+          <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-4 backdrop-blur-sm" onClick={() => setIsFullScreen(false)}>
+            <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-50">
+              <div className="text-white/80 text-sm font-medium px-4 py-2 rounded-full bg-white/10 backdrop-blur-md">{label}</div>
+              <div className="flex gap-2">
+                <button onClick={handleRotate} className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-colors" title="Rotate">
+                  <RotateCw size={20} />
+                </button>
+                <button onClick={() => setIsFullScreen(false)} className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-colors hover:bg-red-500/20 hover:text-red-200" title="Close">
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full h-full flex items-center justify-center pointer-events-none">
+              <img src="https://images.unsplash.com/photo-1562240020-ce31ccb0fa7d?q=80&w=800&auto=format&fit=crop" alt={label} className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl pointer-events-auto cursor-default" style={{ transform: `rotate(${rotation}deg)`, transition: "transform 0.3s ease" }} onClick={(e) => e.stopPropagation()} />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+
 const ApprovalFlowModal = ({ isOpen, onClose, request, onApprove, onReject, onCreateContract }: ApprovalFlowModalProps) => {
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectInput, setShowRejectInput] = useState(false);
@@ -234,17 +345,29 @@ const ApprovalFlowModal = ({ isOpen, onClose, request, onApprove, onReject, onCr
               {/* Reservation Form Details */}
               {request.formResponse && (
                 <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                  <div className="px-4 py-2 bg-gray-50/80 border-b border-gray-200 flex items-center gap-2">
+                  <div className="px-4 py-3 bg-gray-50/80 border-b border-gray-200 flex items-center gap-2">
                     <FileText size={14} className="text-gray-500" />
                     <h3 className="text-xs font-bold text-gray-900">Reservation Form Response</h3>
                   </div>
                   <div>
-                    {Object.entries(request.formResponse).map(([key, value]) => (
-                      <div key={key} className="flex justify-between items-center px-4 py-2.5 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors group">
-                        <span className="text-[11px] font-medium text-gray-500 w-1/3 group-hover:text-gray-700 transition-colors">{key}</span>
-                        <span className="text-xs font-semibold text-gray-900 flex-1 text-right break-words">{value}</span>
-                      </div>
-                    ))}
+                    {Object.entries(request.formResponse).map(([key, value]) => {
+                      const isFile = String(value).match(/\.(jpg|jpeg|png|pdf)$/i) || key.toLowerCase().includes("upload");
+
+                      if (isFile) {
+                        return <AccordionFileViewer key={key} label={key} filename={String(value)} />;
+                      }
+
+                      return (
+                        <div key={key} className="flex justify-between items-center px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors group">
+                          <span className="text-[11px] font-medium text-gray-500 w-1/3 group-hover:text-gray-700 transition-colors truncate" title={key}>
+                            {key}
+                          </span>
+                          <span className="text-xs font-semibold text-gray-900 flex-1 text-right truncate" title={String(value)}>
+                            {value}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -429,10 +552,10 @@ const ApprovalFlowModal = ({ isOpen, onClose, request, onApprove, onReject, onCr
             {showRejectInput ? (
               <div className="flex gap-3">
                 <input type="text" placeholder="Enter rejection reason..." value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" autoFocus />
-                <Button onPress={handleReject} isDisabled={!rejectionReason.trim()} className="bg-red-500 text-white hover:bg-red-600 font-bold rounded-lg px-4 h-9 text-xs">
+                <Button onClick={handleReject} disabled={!rejectionReason.trim()} className="bg-red-500 text-white hover:bg-red-600 font-bold rounded-lg px-4 h-9 text-xs">
                   Confirm Reject
                 </Button>
-                <Button onPress={() => setShowRejectInput(false)} className="bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold rounded-lg px-3 h-9 text-xs">
+                <Button onClick={() => setShowRejectInput(false)} className="bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold rounded-lg px-3 h-9 text-xs">
                   Cancel
                 </Button>
               </div>
@@ -440,17 +563,17 @@ const ApprovalFlowModal = ({ isOpen, onClose, request, onApprove, onReject, onCr
               <div className="flex gap-3 justify-end">
                 {canApprove && (
                   <>
-                    <Button onPress={() => setShowRejectInput(true)} className="bg-white text-red-600 hover:bg-red-50 border border-gray-200 font-bold rounded-lg px-4 h-9 text-xs">
+                    <Button onClick={() => setShowRejectInput(true)} className="bg-white text-red-600 hover:bg-red-50 border border-gray-200 font-bold rounded-lg px-4 h-9 text-xs">
                       Reject
                     </Button>
-                    <Button onPress={handleApprove} className="bg-emerald-500 text-white hover:bg-emerald-600 font-bold rounded-lg px-4 h-9 text-xs shadow-lg shadow-emerald-200">
+                    <Button onClick={handleApprove} className="bg-emerald-500 text-white hover:bg-emerald-600 font-bold rounded-lg px-4 h-9 text-xs shadow-lg shadow-emerald-200">
                       <Check size={14} className="mr-1" />
                       Approve {currentStep?.name}
                     </Button>
                   </>
                 )}
                 {canCreateContract && (
-                  <Button onPress={handleCreateContract} className="bg-blue-500 text-white hover:bg-blue-600 font-bold rounded-lg px-4 h-9 text-xs shadow-lg shadow-blue-200">
+                  <Button onClick={handleCreateContract} className="bg-blue-500 text-white hover:bg-blue-600 font-bold rounded-lg px-4 h-9 text-xs shadow-lg shadow-blue-200">
                     <FileCheck size={14} className="mr-1" />
                     Create Contract Request
                   </Button>
@@ -858,9 +981,10 @@ interface TableRowProps {
   onViewLead: (request: ReservationRequest) => void;
   onViewUnit: (request: ReservationRequest) => void;
   onQuickApprove?: (request: ReservationRequest) => void;
+  onEdit: (request: ReservationRequest) => void;
 }
 
-const TableRow = ({ request, onViewFlow, onQuickApprove, onQuickReject, isPendingMyApproval, selected, onToggle, onViewLead, onViewUnit }: TableRowProps) => {
+const TableRow = ({ request, onViewFlow, onQuickApprove, onQuickReject, isPendingMyApproval, selected, onToggle, onViewLead, onViewUnit, onEdit }: TableRowProps) => {
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
@@ -1104,29 +1228,31 @@ const TableRow = ({ request, onViewFlow, onQuickApprove, onQuickReject, isPendin
           {/* Quick Approve/Reject */}
           {isPendingMyApproval && request.status === "pending" && !showRejectInput && (
             <div className="flex items-center justify-center gap-2">
-              <Tooltip delay={0}>
-                <Tooltip.Trigger>
-                  <button onClick={() => setShowApproveConfirm(true)} className="p-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors">
-                    <Check size={14} />
-                  </button>
-                </Tooltip.Trigger>
-                <Tooltip.Content showArrow className="bg-gray-900 text-white px-2.5 py-1.5 rounded-lg border-none shadow-xl">
-                  <Tooltip.Arrow className="[&>svg>path]:fill-gray-900" />
-                  <p className="text-xs font-medium">Approve this step</p>
-                </Tooltip.Content>
-              </Tooltip>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button onClick={() => setShowApproveConfirm(true)} className="p-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors">
+                      <Check size={14} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-gray-900 text-white px-2.5 py-1.5 rounded-lg border-none shadow-xl">
+                    <p className="text-xs font-medium">Approve this step</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
-              <Tooltip delay={0}>
-                <Tooltip.Trigger>
-                  <button onClick={() => setShowRejectConfirm(true)} className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
-                    <X size={14} />
-                  </button>
-                </Tooltip.Trigger>
-                <Tooltip.Content showArrow className="bg-gray-900 text-white px-2.5 py-1.5 rounded-lg border-none shadow-xl">
-                  <Tooltip.Arrow className="[&>svg>path]:fill-gray-900" />
-                  <p className="text-xs font-medium">Reject this request</p>
-                </Tooltip.Content>
-              </Tooltip>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button onClick={() => setShowRejectConfirm(true)} className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                      <X size={14} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-gray-900 text-white px-2.5 py-1.5 rounded-lg border-none shadow-xl">
+                    <p className="text-xs font-medium">Reject this request</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           )}
         </td>
@@ -1134,44 +1260,41 @@ const TableRow = ({ request, onViewFlow, onQuickApprove, onQuickReject, isPendin
         {/* Actions (Menu Only) */}
         <td className="py-2 px-2 whitespace-nowrap text-right">
           <div className="flex items-center justify-end">
-            <Dropdown>
-              <Dropdown.Trigger>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <button className="p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 rounded-lg transition-colors outline-none opacity-100">
                   <MoreVertical size={16} />
                 </button>
-              </Dropdown.Trigger>
-              <Dropdown.Popover>
-                <Dropdown.Menu
-                  aria-label="Request Actions"
-                  onAction={(key) => {
-                    if (key === "view") onViewFlow(request);
-                    if (key === "contract") onViewFlow(request);
-                  }}
-                  className="p-1 min-w-[160px]"
-                >
-                  <Dropdown.Item id="view" textValue="View Details">
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Eye size={14} />
-                      <span className="text-sm">View Details</span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="p-1 min-w-[160px]">
+                <DropdownMenuItem onClick={() => onEdit(request)}>
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Edit size={14} />
+                    <span className="text-sm">Edit</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onViewFlow(request)}>
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Eye size={14} />
+                    <span className="text-sm">View Details</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Download size={14} />
+                    <span className="text-sm">Export PDF</span>
+                  </div>
+                </DropdownMenuItem>
+                {request.status === "approved" && !request.contractRequestCreated ? (
+                  <DropdownMenuItem onClick={() => onViewFlow(request)} className="focus:bg-blue-50 focus:text-blue-600">
+                    <div className="flex items-center gap-2 text-blue-600">
+                      <FileCheck size={14} />
+                      <span className="text-sm font-medium">Create Contract</span>
                     </div>
-                  </Dropdown.Item>
-                  <Dropdown.Item id="pdf" textValue="Export PDF">
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Download size={14} />
-                      <span className="text-sm">Export PDF</span>
-                    </div>
-                  </Dropdown.Item>
-                  {request.status === "approved" && !request.contractRequestCreated ? (
-                    <Dropdown.Item id="contract" textValue="Create Contract" className="data-[hover=true]:bg-blue-50 data-[hover=true]:text-blue-600">
-                      <div className="flex items-center gap-2 text-blue-600">
-                        <FileCheck size={14} />
-                        <span className="text-sm font-medium">Create Contract</span>
-                      </div>
-                    </Dropdown.Item>
-                  ) : null}
-                </Dropdown.Menu>
-              </Dropdown.Popover>
-            </Dropdown>
+                  </DropdownMenuItem>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </td>
       </tr>
@@ -1184,9 +1307,11 @@ const TableRow = ({ request, onViewFlow, onQuickApprove, onQuickReject, isPendin
 // =============================================================================
 
 const ReservationRequestsPage = () => {
-  const { requests, approveStep, rejectStep, createContractRequest } = useReservationRequestsStore();
+  const { requests, approveStep, rejectStep, createContractRequest, updateRequest } = useReservationRequestsStore();
+  const { openReservationDrawer, isReservationDrawerOpen, updateReservationDetails, currentReservation, editingReservationId } = useSalesStore();
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingRequestId, setEditingRequestId] = useState<string | null>(null);
 
   // Sorting State
   const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: "asc" | "desc" | null }>({ key: null, direction: null });
@@ -1203,6 +1328,56 @@ const ReservationRequestsPage = () => {
       }
     }
     setSortConfig({ key: newKey, direction });
+  };
+
+  const handleEditRequest = (request: ReservationRequest) => {
+    setEditingRequestId(request.id);
+    openReservationDrawer(request.unit.unitId, `${request.unit.compound} - ${request.unit.unitId}`);
+
+    // Map request to reservation format
+    updateReservationDetails({
+      id: request.id,
+      unitId: request.unit.unitId,
+      unitTitle: `${request.unit.compound} - ${request.unit.unitId}`,
+      client: {
+        name: request.client.name,
+        phone: request.client.phone || "",
+        email: request.client.email || "",
+        notes: "",
+        nationalId: request.client.nationalId || "",
+        idDocumentUrl: null,
+      },
+      paymentPlan: null, // Start with null to allow picking/creating
+      paymentMethod: (request.formResponse?.["Payment Plan"] as string) || "Bank Transfer",
+      paymentProofUrl: null,
+      status: "pending",
+    });
+  };
+
+  const handleReservationSubmit = (data: any) => {
+    if (editingRequestId) {
+      const formResponseUpdates: Record<string, any> = {};
+      if (data.paymentPlan) {
+        formResponseUpdates["Payment Plan"] = data.paymentPlan.name;
+        // If custom plan, we could store more details if needed
+      }
+      if (data.paymentMethod) {
+        formResponseUpdates["Payment Method"] = data.paymentMethod;
+      }
+
+      updateRequest(editingRequestId, {
+        formResponse: {
+          ...requests.find((r) => r.id === editingRequestId)?.formResponse,
+          ...formResponseUpdates,
+        },
+        // Update client info if changed
+        client: {
+          ...requests.find((r) => r.id === editingRequestId)?.client!,
+          ...data.client,
+        },
+      });
+      setEditingRequestId(null);
+    }
   };
   const [showFilters, setShowFilters] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<ReservationRequest | null>(null);
@@ -1705,6 +1880,7 @@ const ReservationRequestsPage = () => {
                         onViewFlow={setSelectedRequest}
                         onViewLead={setSelectedLead}
                         onViewUnit={setSelectedUnit}
+                        onEdit={handleEditRequest}
                         isPendingMyApproval={pendingMyApproval}
                         onQuickApprove={(req) => {
                           const currentStep = req.approvalFlow[req.currentStepIndex];
@@ -1806,6 +1982,8 @@ const ReservationRequestsPage = () => {
       <AnimatePresence>{selectedRequest && <ApprovalFlowModal isOpen={!!selectedRequest} onClose={() => setSelectedRequest(null)} request={selectedRequest} onApprove={approveStep} onReject={rejectStep} onCreateContract={createContractRequest} />}</AnimatePresence>
       <AnimatePresence>{selectedLead && <LeadDetailsModal isOpen={!!selectedLead} onClose={() => setSelectedLead(null)} request={selectedLead} />}</AnimatePresence>
       <AnimatePresence>{selectedUnit && <UnitDetailsModal isOpen={!!selectedUnit} onClose={() => setSelectedUnit(null)} request={selectedUnit} />}</AnimatePresence>
+
+      <ReservationDrawer isOpen={isReservationDrawerOpen} unitPrice={editingRequestId ? requests.find((r) => r.id === editingRequestId)?.unit.price || 0 : 0} onSubmit={handleReservationSubmit} isEditing={!!editingRequestId} />
     </div>
   );
 };

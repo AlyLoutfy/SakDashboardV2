@@ -3,7 +3,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import type { DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Plus, ListX } from "lucide-react";
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import InstallmentRow from "./InstallmentRow";
 import type { Installment } from "../../store/paymentPlansStore";
 
@@ -42,7 +42,7 @@ const InstallmentList = ({ installments, onUpdate, onRemove, onReorder, onAdd }:
         </div>
         <h3 className="text-lg font-medium text-gray-700 mb-1">No Installments Yet</h3>
         <p className="text-sm text-gray-500 text-center mb-4 max-w-xs">Use the calculator above to generate installments, or add them manually.</p>
-        <Button onPress={onAdd} variant="secondary" className="gap-2 text-emerald-600 border-emerald-200 hover:bg-emerald-50">
+        <Button onClick={onAdd} variant="secondary" className="gap-2 text-emerald-600 border-emerald-200 hover:bg-emerald-50">
           <Plus size={18} />
           Add Installment
         </Button>
@@ -74,7 +74,7 @@ const InstallmentList = ({ installments, onUpdate, onRemove, onReorder, onAdd }:
       </DndContext>
 
       {/* Add Button */}
-      <Button onPress={onAdd} variant="ghost" className="w-full gap-2 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 border-2 border-dashed border-gray-200 hover:border-emerald-200 rounded-xl py-3">
+      <Button onClick={onAdd} variant="ghost" className="w-full gap-2 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 border-2 border-dashed border-gray-200 hover:border-emerald-200 rounded-xl py-3">
         <Plus size={18} />
         Add Installment
       </Button>

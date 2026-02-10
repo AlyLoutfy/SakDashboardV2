@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Popover } from "@heroui/react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Calendar } from "lucide-react";
 import { DayPicker } from "react-day-picker";
@@ -23,14 +23,14 @@ export default function DatePicker({ value, onChange, className, placeholder = "
   };
 
   return (
-    <Popover isOpen={isOpen} onOpenChange={setIsOpen}>
-      <Popover.Trigger>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
         <div className={`relative cursor-pointer ${className}`}>
           <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input readOnly type="text" value={value ? format(value, "dd/MM/yyyy") : ""} placeholder={placeholder} className="w-full pl-10 pr-3 py-2.5 text-sm font-semibold text-gray-800 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all cursor-pointer placeholder-gray-400" />
         </div>
-      </Popover.Trigger>
-      <Popover.Content placement="bottom start" className="p-0 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+      </PopoverTrigger>
+      <PopoverContent side="bottom" align="start" className="p-0 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
         <style>{`
           .rdp {
             --rdp-cell-size: 32px;
@@ -55,7 +55,7 @@ export default function DatePicker({ value, onChange, className, placeholder = "
           }
         `}</style>
         <DayPicker mode="single" selected={value} onSelect={handleSelect} showOutsideDays className="border-0" />
-      </Popover.Content>
+      </PopoverContent>
     </Popover>
   );
 }

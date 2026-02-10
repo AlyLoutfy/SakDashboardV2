@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Plus, Minus, RefreshCw, Percent, Layers } from "lucide-react";
-import { Button } from "@heroui/react";
 import { formatCurrency, usePaymentPlansStore, type PaymentType } from "../../store/paymentPlansStore";
 import DatePicker from "../common/DatePicker";
 
@@ -183,10 +182,10 @@ export default function SmartBuilderBar() {
 
         {/* Add Button */}
         <div className="pb-[1px]">
-          <Button onPress={handleAdd} className="h-[42px] bg-gray-900 text-white font-semibold rounded-xl px-6 shadow-lg shadow-gray-200 hover:bg-gray-800 hover:scale-[1.02] transition-all active:scale-95">
+          <button onClick={handleAdd} className="h-[42px] flex items-center bg-gray-900 text-white font-semibold rounded-xl px-6 shadow-lg shadow-gray-200 hover:bg-gray-800 hover:scale-[1.02] transition-all active:scale-95">
             <Plus size={18} className="mr-2" />
             Add
-          </Button>
+          </button>
         </div>
       </div>
 

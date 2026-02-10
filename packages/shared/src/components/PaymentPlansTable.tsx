@@ -1,7 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, MoreVertical, Copy, Trash2, Eye, FileText } from "lucide-react";
-import { Button, Dropdown } from "@heroui/react";
 import type { PaymentPlan } from "../../store/paymentPlansStore";
 import { formatCurrency, formatDate, calculatePlanSummary } from "../../store/paymentPlansStore";
 
@@ -12,6 +11,64 @@ interface PaymentPlansTableProps {
   onDelete: (id: string) => void;
   onCreate: () => void;
 }
+
+// Simple dropdown component to replace HeroUI Dropdown
+const ActionsDropdown = ({ onView, onDuplicate, onDelete }: { onView: () => void; onDuplicate: () => void; onDelete: () => void }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button onClick={() => setIsOpen(!isOpen)} className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-gray-600 hover:bg-gray-100">
+        <MoreVertical size={16} />
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-xl border border-gray-200 shadow-lg z-50 py-1 overflow-hidden">
+          <button
+            onClick={() => {
+              onView();
+              setIsOpen(false);
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <Eye size={14} />
+            <span>View & Edit</span>
+          </button>
+          <button
+            onClick={() => {
+              onDuplicate();
+              setIsOpen(false);
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <Copy size={14} />
+            <span>Duplicate</span>
+          </button>
+          <button
+            onClick={() => {
+              onDelete();
+              setIsOpen(false);
+            }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <Trash2 size={14} />
+            <span>Delete</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const STATUS_CONFIG: Record<PaymentPlan["status"], { label: string; color: string; bg: string }> = {
   draft: { label: "Draft", color: "text-gray-600", bg: "bg-gray-100" },
@@ -41,10 +98,10 @@ const PaymentPlansTable = ({ plans, onSelect, onDuplicate, onDelete, onCreate }:
 
         {/* Status Filter */}
 
-        <Button onPress={onCreate} className="gap-2 bg-gray-900 text-white font-medium shadow-lg shadow-gray-200 hover:bg-gray-800 rounded-xl h-[42px]">
+        <button onClick={onCreate} className="flex items-center gap-2 bg-gray-900 text-white font-medium shadow-lg shadow-gray-200 hover:bg-gray-800 rounded-xl h-[42px] px-4 transition-colors">
           <Plus size={18} />
           New Plan
-        </Button>
+        </button>
       </div>
 
       {/* Table */}
@@ -57,10 +114,10 @@ const PaymentPlansTable = ({ plans, onSelect, onDuplicate, onDelete, onCreate }:
             <h3 className="text-lg font-medium text-gray-700 mb-1">No Payment Plans Found</h3>
             <p className="text-sm text-gray-500 mb-4">{searchQuery ? "Try adjusting your search" : "Create your first payment plan to get started"}</p>
             {!searchQuery && (
-              <Button onPress={onCreate} variant="secondary" className="gap-2">
+              <button onClick={onCreate} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium transition-colors">
                 <Plus size={18} />
                 Create Payment Plan
-              </Button>
+              </button>
             )}
           </div>
         ) : (
@@ -110,41 +167,7 @@ const PaymentPlansTable = ({ plans, onSelect, onDuplicate, onDelete, onCreate }:
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusConfig.color} ${statusConfig.bg}`}>{statusConfig.label}</span>
                     </td>
                     <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                      <Dropdown>
-                        <Dropdown.Trigger>
-                          <Button isIconOnly variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                            <MoreVertical size={16} />
-                          </Button>
-                        </Dropdown.Trigger>
-                        <Dropdown.Popover>
-                          <Dropdown.Menu
-                            onAction={(key) => {
-                              if (key === "view") onSelect(plan.id);
-                              else if (key === "duplicate") onDuplicate(plan.id);
-                              else if (key === "delete") onDelete(plan.id);
-                            }}
-                          >
-                            <Dropdown.Item id="view" textValue="View & Edit">
-                              <div className="flex items-center gap-2">
-                                <Eye size={14} />
-                                <span>View & Edit</span>
-                              </div>
-                            </Dropdown.Item>
-                            <Dropdown.Item id="duplicate" textValue="Duplicate">
-                              <div className="flex items-center gap-2">
-                                <Copy size={14} />
-                                <span>Duplicate</span>
-                              </div>
-                            </Dropdown.Item>
-                            <Dropdown.Item id="delete" textValue="Delete" variant="danger">
-                              <div className="flex items-center gap-2">
-                                <Trash2 size={14} />
-                                <span>Delete</span>
-                              </div>
-                            </Dropdown.Item>
-                          </Dropdown.Menu>
-                        </Dropdown.Popover>
-                      </Dropdown>
+                      <ActionsDropdown onView={() => onSelect(plan.id)} onDuplicate={() => onDuplicate(plan.id)} onDelete={() => onDelete(plan.id)} />
                     </td>
                   </motion.tr>
                 );

@@ -135,6 +135,7 @@ interface ReservationRequestsState {
   rejectStep: (requestId: string, approver: Approver, reason: string) => void;
   cancelRequest: (requestId: string, canceledBy: Approver, reason?: string) => void;
   createContractRequest: (requestId: string, createdBy: Approver) => void;
+  updateRequest: (requestId: string, updates: Partial<ReservationRequest>, performedBy?: Approver) => void;
   uploadPdf: (requestId: string, uploadedBy: Approver) => void;
 
   // Selectors
@@ -503,6 +504,8 @@ const generateMockReservations = (): ReservationRequest[] => {
         "Direct Indirect": Math.random() > 0.5 ? "Direct" : "Indirect",
         "Payment Plan": "1% monthly 8 years",
         "Sales Person": teamMembers.sales[i % teamMembers.sales.length].name,
+        "ID Upload": i % 2 === 0 ? "national_id_front.jpg" : "passport_scan.pdf",
+        "Proof of Payment": "bank_receipt_ref_992.jpg",
       },
     });
   }
@@ -700,6 +703,30 @@ export const useReservationRequestsStore = create<ReservationRequestsState>((set
         ],
       };
     }),
+
+  updateRequest: (requestId, updates, performedBy) =>
+    set((state) => ({
+      requests: state.requests.map((req) => {
+        if (req.id !== requestId) return req;
+        const now = new Date();
+        const historyUpdate = performedBy
+          ? {
+              id: `h-${Date.now()}`,
+              action: "updated",
+              description: "Reservation details updated",
+              performedBy,
+              performedAt: now,
+            }
+          : undefined;
+
+        return {
+          ...req,
+          ...updates,
+          updatedAt: now,
+          history: historyUpdate ? [...req.history, historyUpdate] : req.history,
+        };
+      }),
+    })),
 
   uploadPdf: (requestId, uploadedBy) =>
     set((state) => ({

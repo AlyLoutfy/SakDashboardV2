@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, Plus, MoreVertical, Copy, Trash2, Eye, FileText } from "lucide-react";
-import { Button, Dropdown } from "@heroui/react";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import type { PaymentPlan } from "../../store/paymentPlansStore";
 import { formatCurrency, formatDate, calculatePlanSummary } from "../../store/paymentPlansStore";
 
@@ -41,7 +42,7 @@ const PaymentPlansTable = ({ plans, onSelect, onDuplicate, onDelete, onCreate }:
 
         {/* Status Filter */}
 
-        <Button onPress={onCreate} className="gap-2 bg-gray-900 text-white font-medium shadow-lg shadow-gray-200 hover:bg-gray-800 rounded-xl h-[42px]">
+        <Button onClick={onCreate} className="gap-2 bg-gray-900 text-white font-medium shadow-lg shadow-gray-200 hover:bg-gray-800 rounded-xl h-[42px]">
           <Plus size={18} />
           New Plan
         </Button>
@@ -57,7 +58,7 @@ const PaymentPlansTable = ({ plans, onSelect, onDuplicate, onDelete, onCreate }:
             <h3 className="text-lg font-medium text-gray-700 mb-1">No Payment Plans Found</h3>
             <p className="text-sm text-gray-500 mb-4">{searchQuery ? "Try adjusting your search" : "Create your first payment plan to get started"}</p>
             {!searchQuery && (
-              <Button onPress={onCreate} variant="secondary" className="gap-2">
+              <Button onClick={onCreate} variant="secondary" className="gap-2">
                 <Plus size={18} />
                 Create Payment Plan
               </Button>
@@ -110,41 +111,27 @@ const PaymentPlansTable = ({ plans, onSelect, onDuplicate, onDelete, onCreate }:
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusConfig.color} ${statusConfig.bg}`}>{statusConfig.label}</span>
                     </td>
                     <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                      <Dropdown>
-                        <Dropdown.Trigger>
-                          <Button isIconOnly variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
                             <MoreVertical size={16} />
                           </Button>
-                        </Dropdown.Trigger>
-                        <Dropdown.Popover>
-                          <Dropdown.Menu
-                            onAction={(key) => {
-                              if (key === "view") onSelect(plan.id);
-                              else if (key === "duplicate") onDuplicate(plan.id);
-                              else if (key === "delete") onDelete(plan.id);
-                            }}
-                          >
-                            <Dropdown.Item id="view" textValue="View & Edit">
-                              <div className="flex items-center gap-2">
-                                <Eye size={14} />
-                                <span>View & Edit</span>
-                              </div>
-                            </Dropdown.Item>
-                            <Dropdown.Item id="duplicate" textValue="Duplicate">
-                              <div className="flex items-center gap-2">
-                                <Copy size={14} />
-                                <span>Duplicate</span>
-                              </div>
-                            </Dropdown.Item>
-                            <Dropdown.Item id="delete" textValue="Delete" variant="danger">
-                              <div className="flex items-center gap-2">
-                                <Trash2 size={14} />
-                                <span>Delete</span>
-                              </div>
-                            </Dropdown.Item>
-                          </Dropdown.Menu>
-                        </Dropdown.Popover>
-                      </Dropdown>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => onSelect(plan.id)}>
+                            <Eye size={14} />
+                            <span>View & Edit</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onDuplicate(plan.id)}>
+                            <Copy size={14} />
+                            <span>Duplicate</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem variant="destructive" onClick={() => onDelete(plan.id)}>
+                            <Trash2 size={14} />
+                            <span>Delete</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </motion.tr>
                 );

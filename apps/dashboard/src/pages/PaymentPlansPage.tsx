@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Save, X, AlertCircle, CreditCard, Maximize2, Minimize2, FolderOpen, ChevronRight } from "lucide-react";
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import { usePaymentPlansStore, calculatePlanSummary, formatCurrency, type PaymentPlan } from "../store/paymentPlansStore";
 
 // Components
@@ -62,7 +62,7 @@ const PaymentPlansPage = () => {
               <p className="text-xs text-gray-500">Full Screen Preview</p>
             </div>
           </div>
-          <Button onPress={() => setIsFullScreen(false)} variant="ghost" className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium">
+          <Button onClick={() => setIsFullScreen(false)} variant="ghost" className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium">
             <Minimize2 size={18} className="mr-2" />
             Exit Preview
           </Button>
@@ -124,10 +124,10 @@ const PaymentPlansPage = () => {
                   </div>
                 </div>
                 <div className="flex justify-end gap-3 mt-6">
-                  <Button variant="ghost" onPress={() => setShowDeleteConfirm(null)}>
+                  <Button variant="ghost" onClick={() => setShowDeleteConfirm(null)}>
                     Cancel
                   </Button>
-                  <Button onPress={() => handleConfirmDelete(showDeleteConfirm)} className="bg-red-500 text-white hover:bg-red-600">
+                  <Button onClick={() => handleConfirmDelete(showDeleteConfirm)} className="bg-red-500 text-white hover:bg-red-600">
                     Delete
                   </Button>
                 </div>
@@ -145,7 +145,7 @@ const PaymentPlansPage = () => {
       {/* Top Bar - matching integrations page style */}
       <div className="h-14 border-b border-gray-200 flex items-center justify-between px-4 bg-gray-50/50 shrink-0">
         <div className="flex items-center gap-3">
-          <Button isIconOnly variant="ghost" onPress={cancelEdit} className="text-gray-500 hover:text-gray-700 w-8 h-8">
+          <Button size="icon" variant="ghost" onClick={cancelEdit} className="text-gray-500 hover:text-gray-700 w-8 h-8">
             <ArrowLeft size={18} />
           </Button>
           <div className="flex items-center gap-2 text-gray-500">
@@ -157,7 +157,7 @@ const PaymentPlansPage = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button onPress={() => setShowLoadModal(true)} variant="ghost" className="text-gray-600 font-medium hover:bg-gray-100">
+          <Button onClick={() => setShowLoadModal(true)} variant="ghost" className="text-gray-600 font-medium hover:bg-gray-100">
             <FolderOpen size={16} className="mr-2" /> Load Payment Plan
           </Button>
 
@@ -171,16 +171,16 @@ const PaymentPlansPage = () => {
             </div>
           )}
 
-          <Button isIconOnly variant="ghost" onPress={() => setIsFullScreen(true)} className="text-gray-500 hover:text-gray-700">
+          <Button size="icon" variant="ghost" onClick={() => setIsFullScreen(true)} className="text-gray-500 hover:text-gray-700">
             <Maximize2 size={18} />
           </Button>
           <div className="h-6 w-px bg-gray-200 mx-1"></div>
 
-          <Button variant="ghost" onPress={cancelEdit} className="text-gray-600 text-sm">
+          <Button variant="ghost" onClick={cancelEdit} className="text-gray-600 text-sm">
             <X size={16} className="mr-1" />
             Cancel
           </Button>
-          <Button onPress={handleSave} isDisabled={!validation.isValid} className="gap-2 bg-gray-900 text-white font-medium shadow-lg shadow-gray-200 hover:bg-gray-800 text-sm disabled:opacity-50">
+          <Button onClick={handleSave} disabled={!validation.isValid} className="gap-2 bg-gray-900 text-white font-medium shadow-lg shadow-gray-200 hover:bg-gray-800 text-sm disabled:opacity-50">
             <Save size={16} />
             Save Plan
           </Button>
@@ -191,7 +191,7 @@ const PaymentPlansPage = () => {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden m-4" onClick={(e) => e.stopPropagation()}>
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-900">Load Existing Plan</h3>
-              <Button isIconOnly size="sm" variant="ghost" onPress={() => setShowLoadModal(false)}>
+              <Button size="icon" variant="ghost" onClick={() => setShowLoadModal(false)}>
                 <X size={18} />
               </Button>
             </div>

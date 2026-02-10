@@ -1,4 +1,8 @@
-import { Button, Input, ComboBox, ListBox, Switch, Chip, Popover } from "@heroui/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Plus, Trash2, ArrowLeft, Save, X, Search, ChevronDown, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { FieldMapping, IntegrationData } from "../store/integrationStore";
@@ -17,70 +21,46 @@ const SOURCE_FIELDS_MOCK = ["Full Name", "Email", "Phone", "Notes", "Company", "
 
 const SourceFieldManager = ({ currentFields, onAdd, onRemove }: { currentFields: string[]; onAdd: (val: string) => void; onRemove: (val: string) => void }) => {
   const [isAdding, setIsAdding] = useState(false);
-  const [inputValue, setInputValue] = useState("");
-
-  const handleSelection = (key: React.Key | null) => {
-    if (key) {
-      onAdd(key.toString());
-      setIsAdding(false);
-      setInputValue("");
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && inputValue) {
-      onAdd(inputValue);
-      setIsAdding(false);
-      setInputValue("");
-    }
-    if (e.key === "Escape") {
-      setIsAdding(false);
-      setInputValue("");
-    }
-  };
 
   return (
     <div className="flex flex-wrap gap-2 min-h-[32px] items-center">
       {currentFields.map((f) => (
-        <Chip key={f} size="sm" variant="soft" className="h-7 px-3 bg-gray-100 text-gray-700 rounded-md">
+        <Badge key={f} variant="secondary" className="h-7 px-3 bg-gray-100 text-gray-700 rounded-md">
           {f}
           <button type="button" onClick={() => onRemove(f)} className="ml-1 hover:bg-black/10 rounded-full p-0.5 transition-colors" aria-label="Remove source">
             <X size={10} />
           </button>
-        </Chip>
+        </Badge>
       ))}
 
       {isAdding ? (
         <div className="w-40 relative">
-          <ComboBox
+          <select
             autoFocus
-            aria-label="Add Source"
-            inputValue={inputValue}
-            onInputChange={setInputValue}
-            onSelectionChange={handleSelection}
-            onKeyDown={handleKeyDown}
-            allowsCustomValue
-            className="w-full"
-            onBlur={() => {
-              setTimeout(() => {
-                if (!inputValue) setIsAdding(false);
-              }, 200);
+            value=""
+            onChange={(e) => {
+              if (e.target.value) {
+                onAdd(e.target.value);
+                setIsAdding(false);
+              }
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setIsAdding(false);
+              }
+            }}
+            onBlur={() => {
+              setTimeout(() => setIsAdding(false), 200);
+            }}
+            className="w-full bg-transparent text-xs px-2 h-8 rounded-md shadow-sm border border-emerald-500 outline-none"
           >
-            <ComboBox.InputGroup>
-              <Input placeholder="Type or select..." className="bg-transparent text-xs px-2 [&>div]:min-h-0 [&>div]:h-8 [&>div]:rounded-md [&>div]:shadow-sm border-emerald-500" />
-              <ComboBox.Trigger />
-            </ComboBox.InputGroup>
-            <ComboBox.Popover>
-              <ListBox>
-                {SOURCE_FIELDS_MOCK.filter((f) => !currentFields.includes(f)).map((f) => (
-                  <ListBox.Item key={f} id={f} textValue={f}>
-                    {f}
-                  </ListBox.Item>
-                ))}
-              </ListBox>
-            </ComboBox.Popover>
-          </ComboBox>
+            <option value="">Select a field...</option>
+            {SOURCE_FIELDS_MOCK.filter((f) => !currentFields.includes(f)).map((f) => (
+              <option key={f} value={f}>
+                {f}
+              </option>
+            ))}
+          </select>
         </div>
       ) : (
         <button onClick={() => setIsAdding(true)} className="w-6 h-6 rounded-full border border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:text-emerald-500 hover:border-emerald-500 transition-colors" aria-label="Add Source">
@@ -102,21 +82,17 @@ const TargetFieldSelect = ({ value, onChange, options }: { value: string; onChan
     if (!isOpen) setSearch("");
   }, [isOpen]);
 
-  const items = filteredOptions.map((opt) => ({ key: opt, label: opt }));
-
   return (
-    // @ts-ignore
-    <Popover isOpen={isOpen} onOpenChange={setIsOpen} placement="bottom-start" offset={5}>
-      <Popover.Trigger>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
         <div className="w-full">
           <div className="relative w-full">
-            {/* @ts-ignore */}
-            <Input value={value || ""} placeholder="Sakneen Field" readOnly className="w-full text-sm h-8 [&>div]:rounded-md [&>div]:min-h-0 cursor-pointer caret-transparent [&>div]:!outline-none [&>div]:!ring-0 [&>div]:focus-within:!ring-0 [&_input]:pr-8" />
+            <input value={value || ""} placeholder="Sakneen Field" readOnly className="w-full text-sm h-8 rounded-md border border-gray-200 px-2 cursor-pointer outline-none bg-white" />
             <ChevronDown size={14} className={`absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
           </div>
         </div>
-      </Popover.Trigger>
-      <Popover.Content className="w-[220px] p-0 shadow-xl border border-gray-200 rounded-xl bg-white overflow-hidden">
+      </PopoverTrigger>
+      <PopoverContent align="start" sideOffset={5} className="w-[220px] p-0 shadow-xl border border-gray-200 rounded-xl bg-white overflow-hidden">
         <div className="bg-gray-50 p-2 border-b border-gray-100">
           <div className="relative bg-white rounded-md overflow-hidden border border-gray-200">
             <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -125,29 +101,24 @@ const TargetFieldSelect = ({ value, onChange, options }: { value: string; onChan
             <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()} onFocus={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()} placeholder="Search..." className="w-full pl-8 pr-2 py-1.5 text-xs border-none bg-transparent focus:outline-none placeholder:text-gray-400 text-gray-900" />
           </div>
         </div>
-        <ListBox
-          aria-label="Select Target Field"
-          selectionMode="single"
-          selectedKeys={value ? new Set([value]) : new Set()}
-          onSelectionChange={(keys) => {
-            if (keys === "all") return;
-            const selected = Array.from(keys)[0];
-            if (selected) {
-              onChange(selected.toString());
-              setIsOpen(false);
-            }
-          }}
-          className="max-h-[200px] overflow-y-auto p-1 gap-0.5 scrollbar-hide w-full focus:outline-none"
-          items={items}
-        >
-          {(item) => (
-            <ListBox.Item key={item.key} textValue={item.label} className="data-[hover=true]:bg-emerald-50 data-[selected=true]:text-emerald-600 rounded-md px-2 py-1.5 text-xs transition-colors w-full cursor-pointer outline-none">
-              {item.label}
-            </ListBox.Item>
-          )}
-        </ListBox>
-        {items.length === 0 && <div className="opacity-50 text-center text-sm py-4">No results found</div>}
-      </Popover.Content>
+        <div className="max-h-[200px] overflow-y-auto p-1 scrollbar-hide w-full" role="listbox" aria-label="Select Target Field">
+          {filteredOptions.map((opt) => (
+            <div
+              key={opt}
+              role="option"
+              aria-selected={value === opt}
+              onClick={() => {
+                onChange(opt);
+                setIsOpen(false);
+              }}
+              className={`${value === opt ? "text-emerald-600 bg-emerald-50" : ""} hover:bg-emerald-50 rounded-md px-2 py-1.5 text-xs transition-colors w-full cursor-pointer`}
+            >
+              {opt}
+            </div>
+          ))}
+          {filteredOptions.length === 0 && <div className="opacity-50 text-center text-sm py-4">No results found</div>}
+        </div>
+      </PopoverContent>
     </Popover>
   );
 };
@@ -238,13 +209,9 @@ const MappingSetup = ({ integration, integrationName = "Integration", onBack, on
           <div className={`${integration.enabled ? "bg-emerald-50 border-emerald-200" : "bg-gray-100 border-gray-200"} border rounded-full px-3 py-1 flex items-center gap-2 text-xs font-medium h-8`}>
             <span className={`w-2 h-2 rounded-full ${integration.enabled ? "bg-emerald-500" : "bg-gray-400"}`} />
             <span className={integration.enabled ? "text-emerald-700" : "text-gray-500"}>{integration.enabled ? "Active" : "Disabled"}</span>
-            <Switch size="sm" isSelected={integration.enabled ?? true} onChange={handleToggleEnabled} className="scale-75">
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-            </Switch>
+            <Switch size="sm" checked={integration.enabled ?? true} onCheckedChange={handleToggleEnabled} className="scale-75" />
           </div>
-          <Button size="sm" className="bg-gray-900 text-white h-8 font-medium rounded-full px-4 shadow-sm hover:bg-gray-800 disabled:opacity-50" onPress={handleSave} isPending={isLoading} isDisabled={!hasChanges}>
+          <Button size="sm" className="bg-gray-900 text-white h-8 font-medium rounded-full px-4 shadow-sm hover:bg-gray-800 disabled:opacity-50" onClick={handleSave} disabled={!hasChanges}>
             <Save size={14} className="mr-2" /> Save Changes
           </Button>
         </div>
@@ -288,16 +255,16 @@ const MappingSetup = ({ integration, integrationName = "Integration", onBack, on
               {/* Fallback */}
               <div className="flex-1 max-w-[160px] mr-12">
                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Fallback</label>
-                <Input placeholder="null" value={row.defaultValue || ""} onChange={(e) => updateRow(row.id, { defaultValue: e.target.value })} className="font-mono text-sm h-8 [&>div]:rounded-md" />
+                <Input placeholder="null" value={row.defaultValue || ""} onChange={(e) => updateRow(row.id, { defaultValue: e.target.value })} className="font-mono text-sm h-8 rounded-md" />
               </div>
 
-              <Button isIconOnly size="sm" variant="ghost" className="mt-4 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg shrink-0" onPress={() => removeRow(row.id)}>
+              <Button size="icon" variant="ghost" className="mt-4 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg shrink-0" onClick={() => removeRow(row.id)}>
                 <Trash2 size={16} />
               </Button>
             </div>
           ))}
 
-          <Button variant="ghost" className="w-full h-12 border-2 border-dashed border-gray-200 text-gray-400 font-medium hover:border-emerald-500 hover:text-emerald-600 rounded-xl" onPress={addRow}>
+          <Button variant="ghost" className="w-full h-12 border-2 border-dashed border-gray-200 text-gray-400 font-medium hover:border-emerald-500 hover:text-emerald-600 rounded-xl" onClick={addRow}>
             + Add New Mapping
           </Button>
         </div>

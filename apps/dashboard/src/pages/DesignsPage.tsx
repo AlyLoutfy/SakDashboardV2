@@ -12,6 +12,8 @@ import { UNIT_DRAWER_DESIGNS } from "../components/UnitDrawerDesigns";
 import { APPROVAL_FLOW_DESIGNS } from "../components/ApprovalFlowDesigns";
 import { HISTORY_TAB_DESIGNS } from "../components/HistoryTabDesigns";
 import { DATE_PICKER_DESIGNS } from "../components/DatePickerDesigns";
+import { RESERVATION_DRAWER_DESIGNS } from "../components/ReservationDrawerDesigns";
+import { RESERVATION_FILE_DESIGNS } from "../components/ReservationFileDesigns";
 import { Search } from "lucide-react";
 
 const DESIGNS = INTEGRATION_DESIGNS;
@@ -178,7 +180,7 @@ const SEARCH_DESIGNS = [
 ];
 
 const DesignsPage = () => {
-  const [activeTab, setActiveTab] = React.useState("history_tab");
+  const [activeTab, setActiveTab] = React.useState("reservation_drawer_designs");
   const topRef = React.useRef<HTMLDivElement>(null);
 
   // Synchronous scroll reset before browser paints
@@ -195,12 +197,16 @@ const DesignsPage = () => {
   };
 
   return (
-    <div className="space-y-12 pb-20" ref={topRef}>
+    <div className="space-y-12 pb-20 h-full overflow-y-auto" ref={topRef}>
       <div className="w-full">
         <div className="mb-8 border-b border-gray-200 dark:border-zinc-800">
-          <div className="flex gap-6 relative overflow-x-auto pb-1 no-scrollbar whitespace-nowrap">
+          <div className="flex gap-6 relative overflow-x-auto pb-3 whitespace-nowrap">
+            <button onClick={() => handleTabChange("reservation_drawer_designs")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "reservation_drawer_designs" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
+              Reservation Drawer (New)
+              {activeTab === "reservation_drawer_designs" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
+            </button>
             <button onClick={() => handleTabChange("history_tab")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "history_tab" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
-              History Tab (Active)
+              History Tab
               {activeTab === "history_tab" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
             </button>
             <button onClick={() => handleTabChange("cards")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "cards" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
@@ -255,8 +261,29 @@ const DesignsPage = () => {
               Date Picker
               {activeTab === "date_picker" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
             </button>
+            <button onClick={() => handleTabChange("id_files")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "id_files" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
+              ID Uploads
+              {activeTab === "id_files" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
+            </button>
           </div>
         </div>
+
+        {/* Reservation Drawer Designs */}
+        {activeTab === "reservation_drawer_designs" && (
+          <div key={`reservation_drawer_designs-${Date.now()}`} className="space-y-16 pt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {RESERVATION_DRAWER_DESIGNS.map(({ id, name, Component }) => (
+              <div key={id} className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{name}</h2>
+                  <p className="text-sm text-gray-500">Click a design below to preview it interactively.</p>
+                </div>
+                <div className="w-full">
+                  <Component />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {activeTab === "cards" && (
           <div key={`cards-${Date.now()}`} className="space-y-16 pt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -500,6 +527,25 @@ const DesignsPage = () => {
             {DATE_PICKER_DESIGNS.map(({ id, name, Component }) => (
               <div key={id} className="flex justify-center">
                 <Component />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ID File Upload Designs */}
+        {activeTab === "id_files" && (
+          <div key={`id_files-${Date.now()}`} className="space-y-16 pt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {RESERVATION_FILE_DESIGNS.map(({ id, name, Component }) => (
+              <div key={id} className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                    Design {id}: {name}
+                  </h2>
+                  <p className="text-sm text-gray-500">Visualization of ID Upload UI.</p>
+                </div>
+                <div className="w-full bg-gray-50/50 p-8 rounded-3xl border border-gray-100 flex justify-center">
+                  <Component />
+                </div>
               </div>
             ))}
           </div>
