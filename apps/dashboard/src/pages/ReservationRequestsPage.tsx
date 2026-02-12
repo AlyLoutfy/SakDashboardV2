@@ -1916,7 +1916,7 @@ const ReservationRequestsPage = () => {
                     setItemsPerPage(Number(e.target.value));
                     setCurrentPage(1);
                   }}
-                  className="bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 py-1 pl-2 pr-8 appearance-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer"
+                  className="bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 py-1 pl-2 pr-8 appearance-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"
                 >
                   <option value={10}>10</option>
                   <option value={20}>20</option>
@@ -1950,7 +1950,7 @@ const ReservationRequestsPage = () => {
                   }
                   if (pageNum > totalPages) return null;
                   return (
-                    <button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${currentPage === pageNum ? "bg-emerald-500 text-white shadow-md shadow-emerald-200" : "text-gray-600 hover:bg-white hover:shadow-sm hover:border-gray-200 border border-transparent"}`}>
+                    <button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${currentPage === pageNum ? "bg-blue-500 text-white shadow-md shadow-blue-200" : "text-gray-600 hover:bg-white hover:shadow-sm hover:border-gray-200 border border-transparent"}`}>
                       {pageNum}
                     </button>
                   );

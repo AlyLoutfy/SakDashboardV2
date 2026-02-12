@@ -14,6 +14,7 @@ import { HISTORY_TAB_DESIGNS } from "../components/HistoryTabDesigns";
 import { DATE_PICKER_DESIGNS } from "../components/DatePickerDesigns";
 import { RESERVATION_DRAWER_DESIGNS } from "../components/ReservationDrawerDesigns";
 import { RESERVATION_FILE_DESIGNS } from "../components/ReservationFileDesigns";
+import { PAYMENT_SCHEDULE_DESIGNS } from "../components/PaymentScheduleDesigns";
 import { Search } from "lucide-react";
 
 const DESIGNS = INTEGRATION_DESIGNS;
@@ -180,7 +181,7 @@ const SEARCH_DESIGNS = [
 ];
 
 const DesignsPage = () => {
-  const [activeTab, setActiveTab] = React.useState("reservation_drawer_designs");
+  const [activeTab, setActiveTab] = React.useState("payment_schedule");
   const topRef = React.useRef<HTMLDivElement>(null);
 
   // Synchronous scroll reset before browser paints
@@ -201,6 +202,10 @@ const DesignsPage = () => {
       <div className="w-full">
         <div className="mb-8 border-b border-gray-200 dark:border-zinc-800">
           <div className="flex gap-6 relative overflow-x-auto pb-3 whitespace-nowrap">
+            <button onClick={() => handleTabChange("payment_schedule")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "payment_schedule" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
+              Payment Schedule
+              {activeTab === "payment_schedule" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
+            </button>
             <button onClick={() => handleTabChange("reservation_drawer_designs")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "reservation_drawer_designs" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
               Reservation Drawer (New)
               {activeTab === "reservation_drawer_designs" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
@@ -267,6 +272,27 @@ const DesignsPage = () => {
             </button>
           </div>
         </div>
+
+        {/* Payment Schedule Designs */}
+        {activeTab === "payment_schedule" && (
+          <div key={`payment_schedule-${Date.now()}`} className="space-y-16 pt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {PAYMENT_SCHEDULE_DESIGNS.map(({ id, name, Component }) => (
+              <div key={id} className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                    {id}. {name}
+                  </h2>
+                  <p className="text-sm text-gray-500">Interactive preview.</p>
+                </div>
+                <div className="w-full flex justify-center bg-slate-50/50 p-8 rounded-3xl border border-slate-200/50">
+                  <div className="w-full max-w-lg bg-white shadow-sm rounded-xl overflow-hidden">
+                    <Component />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Reservation Drawer Designs */}
         {activeTab === "reservation_drawer_designs" && (

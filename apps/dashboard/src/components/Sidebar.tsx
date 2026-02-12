@@ -171,11 +171,11 @@ const Sidebar = () => {
                           <div
                             className={`
                                   relative flex items-center gap-2.5 px-2 py-1.5 text-xs font-medium transition-all duration-200 rounded-lg
-                                  ${isActive ? "bg-emerald-50 text-emerald-700 font-bold" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}
+                                  ${isActive ? "bg-blue-50 text-blue-700 font-bold" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"}
                                   ${isCollapsed ? "justify-center w-7 h-7 p-0 mx-auto" : ""}
                                 `}
                           >
-                            <item.icon size={isCollapsed ? 16 : 16} className={`flex-shrink-0 ${isActive ? "text-emerald-500" : "text-gray-500 group-hover:text-gray-700"}`} strokeWidth={2} />
+                            <item.icon size={isCollapsed ? 16 : 16} className={`flex-shrink-0 ${isActive ? "text-blue-600" : "text-gray-500 group-hover:text-gray-700"}`} strokeWidth={2} />
 
                             {/* Badge for Collapsed State */}
                             {isCollapsed && item.badge ? <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] flex items-center justify-center text-[9px] font-bold text-white bg-red-500 rounded-full px-0.5 border border-white z-10 shadow-sm">{item.badge}</span> : null}

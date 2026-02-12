@@ -1,4 +1,4 @@
-import { X, User, Phone, Mail, FileText, ChevronDown, Plus, Trash2, Calendar, GripVertical, FileCheck, Layers, ArrowRight, CreditCard, Upload, Wallet } from "lucide-react";
+import { X, User, Phone, Mail, FileText, ChevronDown, Plus, Trash2, Calendar, GripVertical, FileCheck, Layers, ArrowRight, CreditCard, Upload, Wallet, Percent, TrendingDown, TrendingUp, ArrowDown, ArrowUp, Tag, Sparkles, PieChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSalesStore } from "../../store/salesStore";
@@ -26,7 +26,7 @@ const formatNumber = (amount: number) => {
 // Avoids timezone shifts by working with year/month/day integers directly.
 const addMonthsToDate = (dateStr: string, months: number): string => {
   const [y, m, d] = dateStr.split("-").map(Number);
-  
+
   // Calculate new year and month
   // m is 1-based (01 to 12)
   let newYear = y;
@@ -48,7 +48,7 @@ const addMonthsToDate = (dateStr: string, months: number): string => {
   // monthIndex is 0-based. newMonth is 1-based.
   // So new Date(newYear, newMonth, 0).getDate() gives last day of newMonth.
   const daysInMonth = new Date(newYear, newMonth, 0).getDate();
-  
+
   // Clamp day to max days in new month
   const newDay = Math.min(d, daysInMonth);
 
@@ -104,17 +104,11 @@ const BulkAddSection = ({ onAdd, onClose, lastInstallmentDate }: { onAdd: (count
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-medium">%</span>
           </div>
         </div>
-        
+
         {lastInstallmentDate ? (
           <div className="space-y-1 col-span-2">
             <label className="text-[10px] font-semibold text-slate-500 uppercase">Months from last installment</label>
-            <input 
-              type="number" 
-              value={gap} 
-              onChange={(e) => handleGapChange(e.target.value === "" ? "" : parseInt(e.target.value))} 
-              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" 
-              placeholder="e.g. 1" 
-            />
+            <input type="number" value={gap} onChange={(e) => handleGapChange(e.target.value === "" ? "" : parseInt(e.target.value))} className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" placeholder="e.g. 1" />
           </div>
         ) : null}
 
@@ -147,6 +141,59 @@ const BulkAddSection = ({ onAdd, onClose, lastInstallmentDate }: { onAdd: (count
   );
 };
 
+// Price Adjustment Component
+const PriceAdjustment = ({ unitPrice, adjustmentPercent, onAdjustmentChange }: { unitPrice: number; adjustmentPercent: number; onAdjustmentChange: (val: number) => void }) => {
+  const adjustedPrice = unitPrice * (1 + adjustmentPercent / 100);
+  const priceDiff = adjustedPrice - unitPrice;
+  const isDiscount = adjustmentPercent < 0;
+  const isPremium = adjustmentPercent > 0;
+  const hasAdjustment = adjustmentPercent !== 0;
+
+  return (
+    <div className="w-full mb-2">
+      <div className="rounded-lg border border-slate-200 bg-slate-50/60 overflow-hidden">
+        {/* Input Row */}
+        <div className="px-3 py-2 flex items-center gap-2.5">
+          <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap shrink-0">Adjust Price</label>
+          <div className="relative flex-1 max-w-[120px]">
+            <input type="number" value={adjustmentPercent || ""} onChange={(e) => onAdjustmentChange(e.target.value === "" ? 0 : parseFloat(e.target.value))} placeholder="0" className="w-full py-1 pl-2 pr-6 bg-white border border-slate-200 rounded-md outline-none text-xs font-semibold text-slate-800 placeholder:text-slate-300 focus:border-blue-400 focus:ring-1 focus:ring-blue-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-slate-400 pointer-events-none">%</span>
+          </div>
+          {hasAdjustment && (
+            <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${isDiscount ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`}>
+              {isDiscount ? <TrendingDown size={10} /> : <TrendingUp size={10} />}
+              {isDiscount ? "Discount" : "Premium"}
+            </motion.div>
+          )}
+        </div>
+
+        {/* Before / After — compact animated reveal */}
+        <AnimatePresence>
+          {hasAdjustment && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} className="overflow-hidden">
+              <div className={`px-3 py-2 border-t flex items-center gap-2 ${isDiscount ? "border-emerald-100 bg-emerald-50/60" : "border-blue-100 bg-blue-50/60"}`}>
+                {/* Original */}
+                <span className="text-xs font-bold text-slate-400 line-through tabular-nums">{formatNumber(unitPrice)}</span>
+                {/* Arrow */}
+                <ArrowRight size={12} className={isDiscount ? "text-emerald-400 shrink-0" : "text-blue-400 shrink-0"} />
+                {/* Adjusted */}
+                <motion.span key={adjustedPrice} initial={{ scale: 1.08, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={`text-xs font-extrabold tabular-nums ${isDiscount ? "text-emerald-700" : "text-blue-700"}`}>
+                  {formatNumber(adjustedPrice)}
+                </motion.span>
+                {/* Diff pill */}
+                <span className={`ml-auto text-[10px] font-bold tabular-nums ${isDiscount ? "text-emerald-600" : "text-blue-600"}`}>
+                  {isDiscount ? "−" : "+"}
+                  {formatNumber(Math.abs(priceDiff))}
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+
 const ReservationDrawer = ({ isOpen, unitPrice, onSubmit, isEditing }: ReservationDrawerProps) => {
   const { closeReservationDrawer, currentReservation, updateCurrentClient, updateReservationDetails, paymentPlans, setCurrentPaymentPlan, createReservation, updateReservation, editingReservationId } = useSalesStore();
 
@@ -155,6 +202,11 @@ const ReservationDrawer = ({ isOpen, unitPrice, onSubmit, isEditing }: Reservati
   const [customInstallments, setCustomInstallments] = useState<Installment[]>([]);
   const [showPlanDropdown, setShowPlanDropdown] = useState(false);
   const [isBulkAddOpen, setIsBulkAddOpen] = useState(false);
+  const [priceAdjustmentPercent, setPriceAdjustmentPercent] = useState(0);
+  const [defaultGap, setDefaultGap] = useState(3);
+
+  // Effective price after adjustment
+  const effectiveUnitPrice = unitPrice * (1 + priceAdjustmentPercent / 100);
 
   const isEditMode = isEditing !== undefined ? isEditing : !!editingReservationId;
 
@@ -175,6 +227,7 @@ const ReservationDrawer = ({ isOpen, unitPrice, onSubmit, isEditing }: Reservati
         setSelectedPlanId("");
         setIsCustomPlan(false);
         setCustomInstallments([]);
+        setPriceAdjustmentPercent(0);
       }
     }
   }, [isOpen, currentReservation]);
@@ -194,6 +247,7 @@ const ReservationDrawer = ({ isOpen, unitPrice, onSubmit, isEditing }: Reservati
     setIsCustomPlan(true);
     setSelectedPlanId("");
     setShowPlanDropdown(false);
+    setPriceAdjustmentPercent(0);
     setCustomInstallments([
       {
         id: `inst-${Date.now()}`,
@@ -206,12 +260,18 @@ const ReservationDrawer = ({ isOpen, unitPrice, onSubmit, isEditing }: Reservati
   };
 
   const handleAddInstallment = () => {
+    let newDate = new Date().toISOString().split("T")[0];
+    if (customInstallments.length > 0) {
+      const lastDate = customInstallments[customInstallments.length - 1].dueDate;
+      newDate = addMonthsToDate(lastDate, defaultGap);
+    }
+
     const newInstallment: Installment = {
       id: `inst-${Date.now()}`,
       name: `Installment ${customInstallments.length}`,
       amount: null,
       percentage: 0,
-      dueDate: new Date().toISOString().split("T")[0],
+      dueDate: newDate,
     };
     setCustomInstallments([...customInstallments, newInstallment]);
   };
@@ -231,7 +291,7 @@ const ReservationDrawer = ({ isOpen, unitPrice, onSubmit, isEditing }: Reservati
   const calculateTotalAmount = () => {
     return customInstallments.reduce((sum, inst) => {
       if (inst.amount) return sum + inst.amount;
-      if (inst.percentage) return sum + (unitPrice * inst.percentage) / 100;
+      if (inst.percentage) return sum + (effectiveUnitPrice * inst.percentage) / 100;
       return sum;
     }, 0);
   };
@@ -383,18 +443,13 @@ const ReservationDrawer = ({ isOpen, unitPrice, onSubmit, isEditing }: Reservati
                 </div>
               </div>
 
-              {/* Payment Plan Section - PDF Style */}
               <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm relative z-0">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
-                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                    <FileCheck size={14} className="text-emerald-500" />
-                    Payment Schedule
+                {/* Plan Selector & Header */}
+                <div className={`p-4 ${!(isCustomPlan || (selectedPlanId && customInstallments.length > 0)) ? "" : "border-b border-slate-100"}`}>
+                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <PieChart size={14} className="text-blue-500" />
+                    Payment Plan
                   </h3>
-                  <span className="text-[10px] text-slate-400 bg-white border border-slate-200 px-2 py-0.5 rounded-full">Optional</span>
-                </div>
-
-                {/* Plan Selector */}
-                <div className={`p-4 ${!(isCustomPlan || (selectedPlanId && customInstallments.length > 0)) ? "rounded-b-xl" : "border-b border-slate-100"}`}>
                   <div className="relative">
                     <button onClick={() => setShowPlanDropdown(!showPlanDropdown)} className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors text-left text-sm">
                       <span className={selectedPlanId || isCustomPlan ? "text-slate-800 font-medium" : "text-slate-400"}>{isCustomPlan ? "Custom Plan" : selectedPlanId ? paymentPlans.find((p) => p.id === selectedPlanId)?.name : "Select a payment plan..."}</span>
@@ -420,69 +475,70 @@ const ReservationDrawer = ({ isOpen, unitPrice, onSubmit, isEditing }: Reservati
                   </div>
                 </div>
 
-                {/* Payment Schedule Document - PDF Style */}
+                {/* Payment Schedule Document - Design 2 Style */}
                 {(isCustomPlan || (selectedPlanId && customInstallments.length > 0)) && (
-                  <div className="bg-white rounded-b-xl">
-                    {/* Document Header */}
-                    <div className="px-4 py-3 bg-white text-slate-700 border-b border-slate-100">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-bold text-sm">Payment Schedule</h4>
-                          <p className="text-xs text-slate-500">{currentReservation?.unitTitle}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-slate-500">Total Value</p>
-                          <p className="font-bold">{formatNumber(unitPrice)}</p>
-                        </div>
+                  <div className="px-5 pb-5">
+                    {/* Price Adjustment */}
+                    {isCustomPlan && (
+                      <div className="mb-4 pt-4">
+                        <PriceAdjustment unitPrice={unitPrice} adjustmentPercent={priceAdjustmentPercent} onAdjustmentChange={setPriceAdjustmentPercent} />
+                        <p className="text-[10px] text-slate-400 mt-1 pl-5">
+                          * <span className="font-semibold text-slate-500">Price Adjustment:</span> Use <span className="font-mono font-bold text-slate-600">-</span> for discount, <span className="font-mono font-bold text-slate-600">+</span> for increase
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Installment List */}
+                    {/* Installments Table */}
+                    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white mb-2 shadow-sm">
+                      {/* Header */}
+                      <div className="flex justify-between items-center bg-gray-50 border-b border-gray-200 px-4 py-2">
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Schedule</span>
+                        <span className="text-xs font-bold text-gray-900 tabular-nums">{formatNumber(totalAmount)}</span>
+                      </div>
+
+                      {/* List */}
+                      <div className="divide-y divide-gray-100">
+                        <AnimatePresence initial={false}>
+                          {customInstallments.map((inst, index) => (
+                            <motion.div key={inst.id} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="group hover:bg-gray-50/50 transition-colors bg-white">
+                              <div className="px-4 py-2.5">
+                                {/* Top Row: Name and Amount */}
+                                <div className="flex justify-between items-center mb-1">
+                                  <input type="text" value={inst.name} onChange={(e) => handleUpdateInstallment(inst.id, { name: e.target.value })} className="font-bold text-gray-900 text-sm bg-transparent border-none outline-none p-0 focus:bg-blue-50/30 rounded w-full max-w-[200px] placeholder:text-gray-300" placeholder="Description" />
+
+                                  <div className="flex items-center gap-3">
+                                    <p className="font-bold text-gray-900 text-sm tabular-nums whitespace-nowrap">{inst.percentage ? formatNumber((effectiveUnitPrice * inst.percentage) / 100) : inst.amount ? formatNumber(inst.amount) : "—"}</p>
+                                    <button onClick={() => handleRemoveInstallment(inst.id)} className="text-gray-300 hover:text-red-500 transition-colors p-1 -mr-2">
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Bottom Row: Date and Percentage */}
+                                <div className="flex justify-between items-center">
+                                  {/* Date (Left Under Name) */}
+                                  <div className="relative flex items-center">
+                                    <input type="date" value={inst.dueDate} onChange={(e) => handleUpdateInstallment(inst.id, { dueDate: e.target.value })} className="text-[10px] text-gray-400 font-medium bg-transparent border-none outline-none p-0 focus:text-gray-600 rounded appearance-none" />
+                                  </div>
+
+                                  {/* Percentage (Right Under Amount) */}
+                                  <div className="flex items-center gap-0.5 pr-6">
+                                    <div className="flex items-center bg-gray-50 px-1.5 py-0.5 rounded text-[10px] font-bold text-gray-500 group-hover:bg-white border border-transparent group-hover:border-gray-200 transition-colors">
+                                      <input type="number" value={inst.percentage || ""} onChange={(e) => handleUpdateInstallment(inst.id, { percentage: parseFloat(e.target.value) || 0, amount: null })} className="bg-transparent border-none outline-none w-6 text-right p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-gray-600" placeholder="0" />
+                                      <span>%</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </AnimatePresence>
                       </div>
                     </div>
 
-                    {/* Table Header - FIXED LAYOUT */}
-                    <div className="hidden sm:grid grid-cols-[1fr_100px_24px] gap-x-2 gap-y-1.5 px-3 py-2 bg-slate-100 border-b border-slate-200 text-[10px] sm:text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                      <div className="min-w-0">Description / %</div>
-                      <div className="w-full flex items-center justify-start pl-8">Date / Amount</div>
-                      <div className="w-6"></div>
-                    </div>
-
-                    {/* Table Rows - Editable */}
-                    <div className="divide-y divide-slate-100">
-                      {customInstallments.map((inst, index) => (
-                        <motion.div key={inst.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="group relative border-b border-slate-100 sm:border-none last:border-0 hover:bg-blue-50/30 transition-colors">
-                          {/* Unified Layout */}
-                          <div className="grid grid-cols-[1fr_100px_24px] gap-x-2 gap-y-1.5 px-3 py-2 text-xs items-center">
-                            {/* Line 1: Description | Date | Calendar */}
-                            <div className="min-w-0">
-                              <input type="text" value={inst.name} onChange={(e) => handleUpdateInstallment(inst.id, { name: e.target.value })} className="w-full bg-transparent border-none outline-none font-medium text-slate-800 placeholder:text-slate-400 focus:bg-white focus:ring-1 focus:ring-blue-500 rounded px-1 -ml-1" placeholder="Description" />
-                            </div>
-                            <div className="w-full flex items-center justify-start h-[20px] pl-8">
-                              <input type="date" value={inst.dueDate} onChange={(e) => handleUpdateInstallment(inst.id, { dueDate: e.target.value })} className="bg-transparent border-none outline-none text-[10px] text-slate-500 focus:bg-white focus:ring-1 focus:ring-blue-500 rounded p-0 text-left w-full appearance-none [&::-webkit-calendar-picker-indicator]:hidden h-full leading-none" />
-                            </div>
-                            <div className="flex justify-center items-center w-full h-[20px]">
-                              <Calendar size={14} className="text-slate-400 shrink-0" />
-                            </div>
-
-                            {/* Line 2: Percentage | Amount | Trash */}
-                            <div className="flex items-center">
-                              <div className="flex items-center gap-1 bg-slate-100 rounded px-1.5 py-0.5">
-                                <input type="number" value={inst.percentage || ""} onChange={(e) => handleUpdateInstallment(inst.id, { percentage: parseFloat(e.target.value) || 0, amount: null })} className="w-8 bg-transparent border-none outline-none font-medium text-slate-700 text-center p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" placeholder="0" />
-                                <span className="text-[10px] text-slate-400">%</span>
-                              </div>
-                            </div>
-                            <div className="w-full text-left font-medium text-slate-700 tabular-nums h-[20px] flex items-center justify-start leading-none pl-8">{inst.percentage ? formatNumber((unitPrice * inst.percentage) / 100) : inst.amount ? formatNumber(inst.amount) : "—"}</div>
-                            <div className="flex justify-center items-center w-full h-[20px]">
-                              {customInstallments.length > 1 && (
-                                <button onClick={() => handleRemoveInstallment(inst.id)} className="text-slate-400 hover:text-red-500 p-0 m-0 leading-none flex items-center justify-center">
-                                  <Trash2 size={14} />
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-
                     {/* Action Buttons */}
-                    <div className="border-t border-slate-100">
+                    <div className="border-t border-slate-100 mt-5 -mx-5 bg-white">
                       {isBulkAddOpen ? (
                         <BulkAddSection
                           onClose={() => setIsBulkAddOpen(false)}
@@ -490,7 +546,6 @@ const ReservationDrawer = ({ isOpen, unitPrice, onSubmit, isEditing }: Reservati
                           onAdd={(count, percentage, frequency, startDate) => {
                             const newInstallments: Installment[] = [];
                             let currentDate = new Date(startDate);
-
                             for (let i = 0; i < count; i++) {
                               newInstallments.push({
                                 id: `inst-bulk-${Date.now()}-${i}`,
@@ -499,39 +554,45 @@ const ReservationDrawer = ({ isOpen, unitPrice, onSubmit, isEditing }: Reservati
                                 percentage: percentage,
                                 dueDate: currentDate.toISOString().split("T")[0],
                               });
-
-                              // Increment date
                               if (frequency === "monthly") currentDate.setMonth(currentDate.getMonth() + 1);
                               else if (frequency === "quarterly") currentDate.setMonth(currentDate.getMonth() + 3);
                               else if (frequency === "yearly") currentDate.setFullYear(currentDate.getFullYear() + 1);
                             }
-
                             setCustomInstallments([...customInstallments, ...newInstallments]);
                           }}
                         />
                       ) : (
-                        <div className="flex divide-x divide-slate-100">
-                          <button onClick={() => setIsBulkAddOpen(true)} className="flex-1 px-3 py-3 text-left hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-blue-600 font-medium text-sm">
+                        <div className="flex flex-col divide-y divide-slate-100">
+                          <button onClick={() => setIsBulkAddOpen(true)} className="w-full px-3 py-3 text-left hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-blue-600 font-medium text-sm">
                             <Layers size={16} />
                             Bulk Add Installments
                           </button>
-                          <button onClick={handleAddInstallment} className="flex-1 px-3 py-3 text-left hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-600 font-medium text-sm">
-                            <Plus size={16} />
-                            Add Single Installment
-                          </button>
+                          <div className="w-full flex items-center">
+                            <button onClick={handleAddInstallment} className="flex-1 px-3 py-3 text-left hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 text-slate-600 font-medium text-sm">
+                              <Plus size={16} />
+                              Add Single Installment
+                            </button>
+                            <div className="px-3 py-3 bg-slate-50 border-l border-slate-100 flex items-center gap-2" title="Default gap in months for new installments">
+                              <span className="text-[10px] uppercase font-bold text-slate-400">Gap</span>
+                              <div className="relative w-10">
+                                <input type="number" value={defaultGap} onChange={(e) => setDefaultGap(parseInt(e.target.value) || 0)} className="w-full pl-1 pr-1 py-1 text-center bg-white border border-slate-200 rounded text-xs font-medium focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" min="1" />
+                                <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-[7px] text-slate-400 bg-white px-0.5">Months</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
 
-                    {/* Document Footer - Totals */}
-                    <div className={`px-4 py-3 border-t-2 rounded-b-xl ${isValidTotal ? "border-emerald-500 bg-emerald-50" : "border-amber-500 bg-amber-50"}`}>
+                    {/* Footer */}
+                    <div className={`px-4 py-3 border-t-2 rounded-b-xl -mx-5 -mb-5 ${Math.abs(totalPercentage - 100) < 0.1 ? "border-blue-500 bg-blue-50" : "border-amber-500 bg-amber-50"}`}>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className={`text-xs font-semibold uppercase tracking-wider ${isValidTotal ? "text-emerald-700" : "text-amber-700"}`}>Total</p>
-                          {!isValidTotal && <p className="text-[10px] text-amber-600 mt-0.5">Total should equal 100%</p>}
+                          <p className={`text-xs font-semibold uppercase tracking-wider ${Math.abs(totalPercentage - 100) < 0.1 ? "text-blue-700" : "text-amber-700"}`}>Total</p>
+                          {Math.abs(totalPercentage - 100) >= 0.1 && <p className="text-[10px] text-amber-600 mt-0.5">Total should equal 100%</p>}
                         </div>
                         <div className="text-right">
-                          <p className={`text-lg font-bold ${isValidTotal ? "text-emerald-700" : "text-amber-700"}`}>{totalPercentage}%</p>
+                          <p className={`text-lg font-bold ${Math.abs(totalPercentage - 100) < 0.1 ? "text-blue-700" : "text-amber-700"}`}>{totalPercentage}%</p>
                           <p className="text-sm text-slate-600 tabular-nums">{formatNumber(totalAmount)}</p>
                         </div>
                       </div>
