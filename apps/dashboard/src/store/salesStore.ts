@@ -28,6 +28,8 @@ export interface Reservation {
   id: string;
   unitId: string;
   unitTitle: string;
+  compound?: string;
+  phase?: string;
   client: Client;
   paymentPlan: PaymentPlan | null;
   paymentMethod: string;
@@ -83,6 +85,8 @@ const dummyReservations: Reservation[] = [
     id: "RES-001",
     unitId: "UNIT-A101",
     unitTitle: "Villa A-101",
+    compound: "Saket",
+    phase: "Phase 1",
     client: {
       name: "Ahmed Mohamed",
       phone: "+20 100 123 4567",
@@ -101,6 +105,8 @@ const dummyReservations: Reservation[] = [
     id: "RES-002",
     unitId: "UNIT-B205",
     unitTitle: "Apartment B-205",
+    compound: "Saket",
+    phase: "Phase 2",
     client: {
       name: "Sara Ali",
       phone: "+20 101 987 6543",
@@ -119,6 +125,8 @@ const dummyReservations: Reservation[] = [
     id: "RES-003",
     unitId: "UNIT-C302",
     unitTitle: "Penthouse C-302",
+    compound: "Sakan",
+    phase: "Phase 1",
     client: {
       name: "Omar Hassan",
       phone: "+20 102 555 8888",
@@ -142,6 +150,7 @@ interface SalesStore {
   isReservationDrawerOpen: boolean;
   currentReservation: Reservation | null;
   editingReservationId: string | null;
+  openWithCustomPlan: boolean;
 
   // Actions
   openReservationDrawer: (unitId: string, unitTitle: string) => void;
@@ -149,6 +158,7 @@ interface SalesStore {
   createReservation: (reservation: Omit<Reservation, "id" | "createdAt" | "status">) => void;
   updateReservation: (id: string, updates: Partial<Reservation>) => void;
   editReservation: (id: string) => void;
+  editReservationWithCustomPlan: (id: string) => void;
   setCurrentPaymentPlan: (plan: PaymentPlan | null) => void;
   updateCurrentClient: (client: Partial<Client>) => void;
   updateReservationDetails: (details: Partial<Reservation>) => void;
@@ -160,6 +170,7 @@ export const useSalesStore = create<SalesStore>((set, get) => ({
   isReservationDrawerOpen: false,
   currentReservation: null,
   editingReservationId: null,
+  openWithCustomPlan: false,
 
   openReservationDrawer: (unitId: string, unitTitle: string) => {
     set({
@@ -184,6 +195,7 @@ export const useSalesStore = create<SalesStore>((set, get) => ({
       isReservationDrawerOpen: false,
       currentReservation: null,
       editingReservationId: null,
+      openWithCustomPlan: false,
     });
   },
 
@@ -214,6 +226,19 @@ export const useSalesStore = create<SalesStore>((set, get) => ({
         isReservationDrawerOpen: true,
         editingReservationId: id,
         currentReservation: { ...reservation },
+        openWithCustomPlan: false,
+      });
+    }
+  },
+
+  editReservationWithCustomPlan: (id) => {
+    const reservation = get().reservations.find((r) => r.id === id);
+    if (reservation) {
+      set({
+        isReservationDrawerOpen: true,
+        editingReservationId: id,
+        currentReservation: { ...reservation },
+        openWithCustomPlan: true,
       });
     }
   },

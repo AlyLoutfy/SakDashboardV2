@@ -18,7 +18,12 @@ import { isWithinInterval, startOfDay, endOfDay } from "date-fns";
 type FilterStatus = "all" | "my_approvals" | "pending" | "blocked" | "approved" | "rejected" | "canceled" | "incomplete";
 
 // Current user ID - in real app would come from auth context
-const CURRENT_USER_ID = "O001"; // Sara Mostafa from Operations
+const CURRENT_USER: Approver = {
+  id: "O001",
+  name: "Sara Mostafa",
+  email: "sara.m@sakneen.com",
+  department: "Operations",
+};
 
 // =============================================================================
 // HELPER FUNCTIONS
@@ -134,6 +139,7 @@ interface ApprovalFlowModalProps {
   onApprove: (requestId: string, approver: Approver) => void;
   onReject: (requestId: string, approver: Approver, reason: string) => void;
   onCreateContract: (requestId: string, createdBy: Approver) => void;
+  currentUser: Approver;
 }
 
 // Helper Component for File Viewing (Accordion Style)
@@ -243,14 +249,13 @@ const AccordionFileViewer = ({ label, filename }: { label: string; filename: str
   );
 };
 
-const ApprovalFlowModal = ({ isOpen, onClose, request, onApprove, onReject, onCreateContract }: ApprovalFlowModalProps) => {
+const ApprovalFlowModal = ({ isOpen, onClose, request, onApprove, onReject, onCreateContract, currentUser }: ApprovalFlowModalProps) => {
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [activeTab, setActiveTab] = useState<"details" | "flow" | "history">("details");
 
   if (!isOpen || !request) return null;
 
-  const currentUser: Approver = { id: "U001", name: "User Admin", email: "admin@sakneen.com" };
   const currentStep = request.approvalFlow[request.currentStepIndex];
   const canApprove = request.status === "pending" && currentStep?.status === "pending";
   const canCreateContract = request.status === "approved" && !request.contractRequestCreated;
@@ -651,6 +656,14 @@ const LeadDetailsModal = ({ isOpen, onClose, request }: { isOpen: boolean; onClo
   );
 };
 
+// Helper Component for Unit Details
+const Item = ({ label, value }: { label: string; value: string | number }) => (
+  <div>
+    <span className="text-gray-400 text-[9px] uppercase font-bold tracking-wider block mb-0.5">{label}</span>
+    <span className="text-xs font-bold text-gray-900">{value}</span>
+  </div>
+);
+
 // =============================================================================
 // UNIT DETAILS MODAL
 // =============================================================================
@@ -670,12 +683,6 @@ const UnitDetailsModal = ({ isOpen, onClose, request }: { isOpen: boolean; onClo
   const { unit } = request;
 
   // Reusable Item Component for cleaner code
-  const Item = ({ label, value }: { label: string; value: string | number }) => (
-    <div>
-      <span className="text-gray-400 text-[9px] uppercase font-bold tracking-wider block mb-0.5">{label}</span>
-      <span className="text-xs font-bold text-gray-900">{value}</span>
-    </div>
-  );
 
   return (
     <div className="fixed inset-0 bg-black/25 z-50 flex justify-end" onClick={onClose}>
@@ -1138,7 +1145,6 @@ const TableRow = ({ request, onViewFlow, onQuickApprove, onQuickReject, isPendin
         </td>
 
         {/* Reservation ID */}
-        {/* Reservation ID */}
         <td className="py-2 px-2 whitespace-nowrap">
           <button onClick={() => onViewFlow(request)} className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 text-[11px] font-bold hover:bg-gray-200 hover:text-gray-900 transition-colors border border-gray-200">
             {request.reservationId}
@@ -1306,6 +1312,17 @@ const TableRow = ({ request, onViewFlow, onQuickApprove, onQuickReject, isPendin
 // MAIN PAGE
 // =============================================================================
 
+const statusFilters: { key: FilterStatus; label: string; highlight?: boolean }[] = [
+  { key: "my_approvals", label: "PENDING YOUR APPROVAL", highlight: true },
+  { key: "all", label: "ALL" },
+  { key: "pending", label: "BLOCKING" },
+  { key: "blocked", label: "RESERVING" },
+  { key: "approved", label: "APPROVED" },
+  { key: "rejected", label: "REJECTED" },
+  { key: "canceled", label: "CANCELED" },
+  { key: "incomplete", label: "INCOMPLETE" },
+];
+
 const ReservationRequestsPage = () => {
   const { requests, approveStep, rejectStep, createContractRequest, updateRequest } = useReservationRequestsStore();
   const { openReservationDrawer, isReservationDrawerOpen, updateReservationDetails, currentReservation, editingReservationId } = useSalesStore();
@@ -1406,7 +1423,7 @@ const ReservationRequestsPage = () => {
     if (req.status !== "pending") return false;
     const currentStep = req.approvalFlow[req.currentStepIndex];
     if (!currentStep || currentStep.status !== "pending") return false;
-    return currentStep.requiredApprovers.some((approver) => approver.id === CURRENT_USER_ID);
+    return currentStep.requiredApprovers.some((approver) => approver.id === CURRENT_USER.id);
   };
 
   // Filter requests
@@ -1523,17 +1540,6 @@ const ReservationRequestsPage = () => {
       incomplete: requests.filter((r) => r.status === "incomplete").length,
     };
   }, [requests]);
-
-  const statusFilters: { key: FilterStatus; label: string; highlight?: boolean }[] = [
-    { key: "my_approvals", label: "PENDING YOUR APPROVAL", highlight: true },
-    { key: "all", label: "ALL" },
-    { key: "pending", label: "BLOCKING" },
-    { key: "blocked", label: "RESERVING" },
-    { key: "approved", label: "APPROVED" },
-    { key: "rejected", label: "REJECTED" },
-    { key: "canceled", label: "CANCELED" },
-    { key: "incomplete", label: "INCOMPLETE" },
-  ];
 
   return (
     <div className="h-full w-full bg-white text-gray-900 overflow-hidden font-sans flex flex-col">
@@ -1885,15 +1891,13 @@ const ReservationRequestsPage = () => {
                         onQuickApprove={(req) => {
                           const currentStep = req.approvalFlow[req.currentStepIndex];
                           if (currentStep) {
-                            const approver = currentStep.requiredApprovers.find((a) => a.id === CURRENT_USER_ID) || currentStep.requiredApprovers[0];
-                            approveStep(req.id, approver);
+                            approveStep(req.id, CURRENT_USER);
                           }
                         }}
                         onQuickReject={(req, reason) => {
                           const currentStep = req.approvalFlow[req.currentStepIndex];
                           if (currentStep) {
-                            const rejector = currentStep.requiredApprovers.find((a) => a.id === CURRENT_USER_ID) || currentStep.requiredApprovers[0];
-                            rejectStep(req.id, rejector, reason);
+                            rejectStep(req.id, CURRENT_USER, reason);
                           }
                         }}
                       />
@@ -1979,7 +1983,7 @@ const ReservationRequestsPage = () => {
       </div>
 
       {/* Approval Flow Modal */}
-      <AnimatePresence>{selectedRequest && <ApprovalFlowModal isOpen={!!selectedRequest} onClose={() => setSelectedRequest(null)} request={selectedRequest} onApprove={approveStep} onReject={rejectStep} onCreateContract={createContractRequest} />}</AnimatePresence>
+      <AnimatePresence>{selectedRequest && <ApprovalFlowModal isOpen={!!selectedRequest} onClose={() => setSelectedRequest(null)} request={selectedRequest} onApprove={approveStep} onReject={rejectStep} onCreateContract={createContractRequest} currentUser={CURRENT_USER} />}</AnimatePresence>
       <AnimatePresence>{selectedLead && <LeadDetailsModal isOpen={!!selectedLead} onClose={() => setSelectedLead(null)} request={selectedLead} />}</AnimatePresence>
       <AnimatePresence>{selectedUnit && <UnitDetailsModal isOpen={!!selectedUnit} onClose={() => setSelectedUnit(null)} request={selectedUnit} />}</AnimatePresence>
 

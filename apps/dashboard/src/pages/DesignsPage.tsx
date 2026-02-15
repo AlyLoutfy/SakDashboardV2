@@ -15,6 +15,8 @@ import { DATE_PICKER_DESIGNS } from "../components/DatePickerDesigns";
 import { RESERVATION_DRAWER_DESIGNS } from "../components/ReservationDrawerDesigns";
 import { RESERVATION_FILE_DESIGNS } from "../components/ReservationFileDesigns";
 import { PAYMENT_SCHEDULE_DESIGNS } from "../components/PaymentScheduleDesigns";
+import { COMPLEX_FILTER_DESIGNS } from "../components/ComplexFilterHeaderDesigns";
+import { CUSTOM_PLAN_DESIGNS } from "../components/CustomPlanDesigns";
 import { Search } from "lucide-react";
 
 const DESIGNS = INTEGRATION_DESIGNS;
@@ -181,7 +183,7 @@ const SEARCH_DESIGNS = [
 ];
 
 const DesignsPage = () => {
-  const [activeTab, setActiveTab] = React.useState("payment_schedule");
+  const [activeTab, setActiveTab] = React.useState("custom_plan");
   const topRef = React.useRef<HTMLDivElement>(null);
 
   // Synchronous scroll reset before browser paints
@@ -269,6 +271,14 @@ const DesignsPage = () => {
             <button onClick={() => handleTabChange("id_files")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "id_files" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
               ID Uploads
               {activeTab === "id_files" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
+            </button>
+            <button onClick={() => handleTabChange("complex_filters")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "complex_filters" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
+              Complex Filters
+              {activeTab === "complex_filters" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
+            </button>
+            <button onClick={() => handleTabChange("custom_plan")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "custom_plan" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
+              Custom Plan (New)
+              {activeTab === "custom_plan" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
             </button>
           </div>
         </div>
@@ -571,6 +581,46 @@ const DesignsPage = () => {
                 </div>
                 <div className="w-full bg-gray-50/50 p-8 rounded-3xl border border-gray-100 flex justify-center">
                   <Component />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Complex Filter Designs */}
+        {activeTab === "complex_filters" && (
+          <div key={`complex_filters-${Date.now()}`} className="space-y-16 pt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {COMPLEX_FILTER_DESIGNS.map(({ id, name, Component }) => (
+              <div key={id} className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                    Design {id}: {name}
+                  </h2>
+                  <p className="text-sm text-gray-500">Advanced filtering capabilities for data-heavy views.</p>
+                </div>
+                <div className="w-full">
+                  <Component />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Custom Plan Designs */}
+        {activeTab === "custom_plan" && (
+          <div key={`custom_plan-${Date.now()}`} className="space-y-16 pt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {CUSTOM_PLAN_DESIGNS.map(({ id, name, Component }) => (
+              <div key={id} className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                    {id}. {name}
+                  </h2>
+                  <p className="text-sm text-gray-500">Interactive preview — try editing, adding, and bulk-generating installments.</p>
+                </div>
+                <div className="w-full flex justify-center bg-slate-50/50 p-8 rounded-3xl border border-slate-200/50">
+                  <div className="w-full max-w-lg bg-white shadow-sm rounded-xl overflow-hidden">
+                    <Component />
+                  </div>
                 </div>
               </div>
             ))}

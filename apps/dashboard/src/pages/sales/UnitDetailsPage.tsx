@@ -1,27 +1,9 @@
-import { Building2, MapPin, Maximize2, Bed, Bath, Car, Check, ArrowRight } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Building2, MapPin, Maximize2, Bed, Bath, Car, Check, ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSalesStore } from "../../store/salesStore";
+import { useCompoundsStore } from "../../store/compoundsStore";
 import ReservationDrawer from "../../components/sales/ReservationDrawer";
-
-// Dummy unit data
-const dummyUnit = {
-  id: "UNIT-A101",
-  title: "Villa A-101",
-  type: "Villa",
-  project: "Palm Hills",
-  location: "6th of October City, Giza",
-  price: 12500000,
-  pricePerMeter: 35000,
-  area: 357,
-  bedrooms: 4,
-  bathrooms: 3,
-  parking: 2,
-  floor: "Ground + 1",
-  view: "Garden View",
-  status: "Available",
-  features: ["Private Garden", "Smart Home System", "Central A/C", "Built-in Kitchen", "Marble Flooring", "High Ceilings"],
-  description: "Luxurious 4-bedroom villa with a private garden and modern amenities. This stunning property features an open-plan living area, gourmet kitchen, and spacious bedrooms with en-suite bathrooms.",
-};
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-EG", {
@@ -33,14 +15,43 @@ const formatCurrency = (amount: number) => {
 };
 
 const UnitDetailsPage = () => {
+  const { compoundId, unitId } = useParams<{ compoundId: string; unitId: string }>();
+  const navigate = useNavigate();
   const { openReservationDrawer, isReservationDrawerOpen } = useSalesStore();
+  const { getUnitById, getCompoundById } = useCompoundsStore();
+
+  const unit = unitId ? getUnitById(unitId) : undefined;
+  const compound = compoundId ? getCompoundById(compoundId) : undefined;
 
   const handleReserve = () => {
-    openReservationDrawer(dummyUnit.id, dummyUnit.title);
+    if (unit) {
+      openReservationDrawer(unit.id, unit.title);
+    }
   };
+
+  if (!unit || !compound) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-slate-800 mb-2">Unit not found</h2>
+          <button onClick={() => navigate(compoundId ? `/sales/compounds/${compoundId}` : "/sales/compounds")} className="text-blue-500 hover:text-blue-600 font-medium text-sm">
+            ← Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 pb-24 sm:pb-8">
+      {/* Back Navigation */}
+      <div className="mb-4 sm:mb-6">
+        <button onClick={() => navigate(`/sales/compounds/${compoundId}`)} className="flex items-center gap-1.5 text-slate-500 hover:text-blue-600 transition-colors text-sm font-medium">
+          <ArrowLeft size={18} />
+          <span>Back to {compound.name}</span>
+        </button>
+      </div>
+
       {/* Hero Section */}
       <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 mb-4 sm:mb-8 shadow-2xl">
         {/* Background Pattern */}
@@ -57,21 +68,21 @@ const UnitDetailsPage = () => {
           <div className="flex flex-col gap-4 sm:gap-6">
             {/* Top Row - Status & Type */}
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wide">{dummyUnit.status}</span>
-              <span className="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold">{dummyUnit.type}</span>
+              <span className={`px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wide ${unit.status === "Available" ? "bg-emerald-500/20 text-emerald-400" : unit.status === "Reserved" ? "bg-amber-500/20 text-amber-400" : unit.status === "Sold" ? "bg-red-500/20 text-red-400" : "bg-slate-500/20 text-slate-400"}`}>{unit.status}</span>
+              <span className="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold">{unit.type}</span>
             </div>
 
             {/* Unit Info */}
             <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">{dummyUnit.title}</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">{unit.title}</h1>
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-slate-400 text-sm">
                 <div className="flex items-center gap-1.5">
                   <MapPin size={14} />
-                  <span>{dummyUnit.location}</span>
+                  <span>{compound.location}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Building2 size={14} />
-                  <span>{dummyUnit.project}</span>
+                  <span>{compound.name}</span>
                 </div>
               </div>
             </div>
@@ -80,16 +91,18 @@ const UnitDetailsPage = () => {
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pt-2">
               <div>
                 <p className="text-slate-400 text-xs sm:text-sm mb-0.5">Starting from</p>
-                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">{formatCurrency(dummyUnit.price)}</p>
-                <p className="text-slate-500 text-xs sm:text-sm">{formatCurrency(dummyUnit.pricePerMeter)} / m²</p>
+                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">{formatCurrency(unit.price)}</p>
+                <p className="text-slate-500 text-xs sm:text-sm">{formatCurrency(unit.pricePerMeter)} / m²</p>
               </div>
 
-              <Button onClick={handleReserve} className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold px-6 sm:px-8 py-3 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105">
-                <span className="flex items-center justify-center gap-2">
-                  Reserve Now
-                  <ArrowRight size={18} />
-                </span>
-              </Button>
+              {unit.status === "Available" && (
+                <Button onClick={handleReserve} className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold px-6 sm:px-8 py-3 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105">
+                  <span className="flex items-center justify-center gap-2">
+                    Reserve Now
+                    <ArrowRight size={18} />
+                  </span>
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -101,29 +114,29 @@ const UnitDetailsPage = () => {
           <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-2">
             <Maximize2 size={18} className="text-blue-500" />
           </div>
-          <p className="text-xs text-slate-500">Area</p>
-          <p className="font-bold text-slate-800">{dummyUnit.area} m²</p>
+          <p className="text-xs text-slate-500">BUA</p>
+          <p className="font-bold text-slate-800">{unit.bua} m²</p>
         </div>
         <div className="flex-shrink-0 bg-white rounded-xl border border-slate-200 p-4 shadow-sm min-w-[120px]">
           <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center mb-2">
             <Bed size={18} className="text-purple-500" />
           </div>
           <p className="text-xs text-slate-500">Bedrooms</p>
-          <p className="font-bold text-slate-800">{dummyUnit.bedrooms}</p>
+          <p className="font-bold text-slate-800">{unit.bedrooms}</p>
         </div>
         <div className="flex-shrink-0 bg-white rounded-xl border border-slate-200 p-4 shadow-sm min-w-[120px]">
           <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center mb-2">
             <Bath size={18} className="text-teal-500" />
           </div>
           <p className="text-xs text-slate-500">Bathrooms</p>
-          <p className="font-bold text-slate-800">{dummyUnit.bathrooms}</p>
+          <p className="font-bold text-slate-800">{unit.bathrooms}</p>
         </div>
         <div className="flex-shrink-0 bg-white rounded-xl border border-slate-200 p-4 shadow-sm min-w-[120px]">
           <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-2">
             <Car size={18} className="text-amber-500" />
           </div>
           <p className="text-xs text-slate-500">Parking</p>
-          <p className="font-bold text-slate-800">{dummyUnit.parking}</p>
+          <p className="font-bold text-slate-800">{unit.parking}</p>
         </div>
       </div>
 
@@ -138,9 +151,9 @@ const UnitDetailsPage = () => {
                 <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
                   <Maximize2 size={18} className="text-blue-500" />
                 </div>
-                <span>Area</span>
+                <span>BUA</span>
               </div>
-              <span className="font-semibold text-slate-800">{dummyUnit.area} m²</span>
+              <span className="font-semibold text-slate-800">{unit.bua} m²</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 text-slate-600">
@@ -149,7 +162,7 @@ const UnitDetailsPage = () => {
                 </div>
                 <span>Bedrooms</span>
               </div>
-              <span className="font-semibold text-slate-800">{dummyUnit.bedrooms}</span>
+              <span className="font-semibold text-slate-800">{unit.bedrooms}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 text-slate-600">
@@ -158,7 +171,7 @@ const UnitDetailsPage = () => {
                 </div>
                 <span>Bathrooms</span>
               </div>
-              <span className="font-semibold text-slate-800">{dummyUnit.bathrooms}</span>
+              <span className="font-semibold text-slate-800">{unit.bathrooms}</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 text-slate-600">
@@ -167,7 +180,7 @@ const UnitDetailsPage = () => {
                 </div>
                 <span>Parking</span>
               </div>
-              <span className="font-semibold text-slate-800">{dummyUnit.parking}</span>
+              <span className="font-semibold text-slate-800">{unit.parking}</span>
             </div>
           </div>
         </div>
@@ -178,15 +191,19 @@ const UnitDetailsPage = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Floor</span>
-              <span className="font-semibold text-slate-800">{dummyUnit.floor}</span>
+              <span className="font-semibold text-slate-800">{unit.floor}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-600">View</span>
-              <span className="font-semibold text-slate-800">{dummyUnit.view}</span>
+              <span className="font-semibold text-slate-800">{unit.view}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-600">Unit ID</span>
-              <span className="font-mono text-sm text-slate-500">{dummyUnit.id}</span>
+              <span className="font-mono text-sm text-slate-500">{unit.id}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-600">Compound</span>
+              <span className="font-semibold text-slate-800">{compound.name}</span>
             </div>
           </div>
         </div>
@@ -195,7 +212,7 @@ const UnitDetailsPage = () => {
         <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm">
           <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Features</h3>
           <div className="space-y-3">
-            {dummyUnit.features.map((feature, index) => (
+            {unit.features.map((feature, index) => (
               <div key={index} className="flex items-center gap-2 text-slate-600">
                 <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
                   <Check size={12} className="text-emerald-600" />
@@ -209,30 +226,28 @@ const UnitDetailsPage = () => {
 
       {/* Mobile: Additional Info & Features */}
       <div className="grid grid-cols-1 gap-4 sm:hidden mb-4">
-        {/* Additional Info - Compact */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
           <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Additional Info</h3>
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
               <p className="text-xs text-slate-500">Floor</p>
-              <p className="font-semibold text-slate-800 text-sm">{dummyUnit.floor}</p>
+              <p className="font-semibold text-slate-800 text-sm">{unit.floor}</p>
             </div>
             <div>
               <p className="text-xs text-slate-500">View</p>
-              <p className="font-semibold text-slate-800 text-sm">{dummyUnit.view}</p>
+              <p className="font-semibold text-slate-800 text-sm">{unit.view}</p>
             </div>
             <div>
               <p className="text-xs text-slate-500">Unit ID</p>
-              <p className="font-mono text-xs text-slate-500">{dummyUnit.id}</p>
+              <p className="font-mono text-xs text-slate-500">{unit.id}</p>
             </div>
           </div>
         </div>
 
-        {/* Features - Compact Pills */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
           <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Features</h3>
           <div className="flex flex-wrap gap-2">
-            {dummyUnit.features.map((feature, index) => (
+            {unit.features.map((feature, index) => (
               <span key={index} className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs rounded-full">
                 <Check size={10} />
                 {feature}
@@ -245,21 +260,23 @@ const UnitDetailsPage = () => {
       {/* Description */}
       <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm">
         <h3 className="text-xs sm:text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3 sm:mb-4">Description</h3>
-        <p className="text-slate-600 leading-relaxed text-sm sm:text-base">{dummyUnit.description}</p>
+        <p className="text-slate-600 leading-relaxed text-sm sm:text-base">{unit.description}</p>
       </div>
 
       {/* Mobile: Fixed Reserve Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg sm:hidden z-30">
-        <Button onClick={handleReserve} className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 rounded-xl shadow-lg shadow-blue-500/30">
-          <span className="flex items-center justify-center gap-2">
-            Reserve Now
-            <ArrowRight size={18} />
-          </span>
-        </Button>
-      </div>
+      {unit.status === "Available" && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg sm:hidden z-30">
+          <Button onClick={handleReserve} className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 rounded-xl shadow-lg shadow-blue-500/30">
+            <span className="flex items-center justify-center gap-2">
+              Reserve Now
+              <ArrowRight size={18} />
+            </span>
+          </Button>
+        </div>
+      )}
 
       {/* Reservation Drawer */}
-      <ReservationDrawer isOpen={isReservationDrawerOpen} unitPrice={dummyUnit.price} />
+      <ReservationDrawer isOpen={isReservationDrawerOpen} unitPrice={unit.price} />
     </div>
   );
 };
