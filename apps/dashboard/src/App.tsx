@@ -5,6 +5,9 @@ import IntegrationsPage from "./pages/IntegrationsPage";
 import DesignsPage from "./pages/DesignsPage";
 import ReportsPage from "./pages/ReportsPage";
 import PaymentPlansPage from "./pages/PaymentPlansPage";
+import ChequesCollectionPage from "./pages/ChequesCollectionPage";
+import ClientDetailPage from "./pages/ClientDetailPage";
+import ChequeConfirmationPage from "./pages/ChequeConfirmationPage";
 import BlockingRequestsPage from "./pages/BlockingRequestsPage";
 import ReservationRequestsPage from "./pages/ReservationRequestsPage";
 import ComponentLibraryPage from "./pages/ComponentLibraryPage";
@@ -30,6 +33,9 @@ function App() {
           <Route path="designs" element={<DesignsPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="payment-plans" element={<PaymentPlansPage />} />
+          <Route path="cheques" element={<ChequesCollectionPage />} />
+          <Route path="cheques/client/:clientId" element={<ClientDetailPage />} />
+          <Route path="cheques/confirm/:pendingId" element={<ChequeConfirmationPage />} />
           <Route path="blocking-requests" element={<BlockingRequestsPage />} />
           <Route path="reservation-requests" element={<ReservationRequestsPage />} />
           <Route path="components" element={<ComponentLibraryPage />} />

@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Building2, Layers, CreditCard, Database, Users, TrendingUp, Calendar, FileText, FilePlus, User, Settings, Bell, ExternalLink, LogOut, PanelLeftClose, PanelLeftOpen, Home as HomeIcon, Palette, Component, ChevronDown, Shield, BarChart3, Link2 } from "lucide-react";
+import { Building2, Layers, CreditCard, Database, Users, TrendingUp, Calendar, FileText, FilePlus, User, Settings, Bell, ExternalLink, LogOut, PanelLeftClose, PanelLeftOpen, Home as HomeIcon, Palette, Component, ChevronDown, Shield, BarChart3, Link2, Landmark } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useReservationRequestsStore } from "../store/reservationRequestsStore";
@@ -41,6 +41,7 @@ const Sidebar = () => {
         { name: "Compounds", path: "/compounds", icon: Building2 },
         { name: "Unit Designs", path: "/unit-designs", icon: Layers },
         { name: "Payment Plans", path: "/payment-plans", icon: CreditCard },
+        { name: "Cheques", path: "/cheques", icon: Landmark },
         { name: "Unit Data", path: "/unit-data", icon: Database },
       ],
     },
