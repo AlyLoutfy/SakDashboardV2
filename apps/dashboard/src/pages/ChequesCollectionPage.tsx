@@ -62,7 +62,7 @@ const ChequesCollectionPage = () => {
           </Button>
           <Button onClick={openDrawer} className="h-8 gap-1.5 bg-gray-900 text-white hover:bg-gray-800 text-xs font-medium shadow-sm px-3">
             <Plus size={14} />
-            Add Cheques
+            Create Cheques Wallet
           </Button>
         </div>
       </div>

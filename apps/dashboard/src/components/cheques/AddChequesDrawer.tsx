@@ -248,7 +248,7 @@ const AddChequesDrawer = () => {
           >
             {/* Header */}
             <div className="h-12 border-b border-gray-200 flex items-center justify-between px-5 shrink-0">
-              <h2 className="text-sm font-bold text-gray-900">Add Cheques</h2>
+              <h2 className="text-sm font-bold text-gray-900">Create Cheques Wallet</h2>
               <button onClick={handleClose} className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors">
                 <X size={16} />
               </button>
@@ -257,8 +257,8 @@ const AddChequesDrawer = () => {
             {/* Body */}
             <div className="flex-1 overflow-y-auto p-5 space-y-6">
               <div>
-                <div className="text-sm font-bold text-gray-900 mb-1">Client & Unit</div>
-                <div className="text-xs text-gray-400">Select client and unit, then configure cheques on the next screen.</div>
+                <div className="text-sm font-bold text-gray-900 mb-1">Wallet Details</div>
+                <div className="text-xs text-gray-400">Select client, unit, and payment plan to create a new cheques wallet.</div>
               </div>
 
               {/* Client Name */}
@@ -478,7 +478,7 @@ const AddChequesDrawer = () => {
                   disabled={!isValid}
                   className="h-9 px-5 bg-gray-900 text-white hover:bg-gray-800 text-xs font-medium shadow-sm disabled:opacity-40 gap-1.5"
                 >
-                  Configure Cheques
+                  Create Wallet
                   <ChevronRight size={14} />
                 </Button>
               </div>
