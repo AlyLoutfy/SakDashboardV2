@@ -480,7 +480,9 @@ const ClientDetailPage = () => {
                     Next Due
                   </div>
                   <div className="text-sm font-bold text-amber-800 mt-0.5">{formatDate(nextDue.dueDate)}</div>
-                  <div className="text-[10px] text-amber-600">{formatCurrency(nextDue.amount)}</div>
+                  <div className="text-[10px] text-amber-600">
+                    {formatCurrency(nextDue.amount)} · {nextDue.unitCode}
+                  </div>
                 </div>
               )}
             </div>
@@ -514,9 +516,10 @@ const ClientDetailPage = () => {
               <div className="bg-blue-50 rounded-lg p-3.5 text-center">
                 <div className="text-[10px] text-blue-600 uppercase tracking-wide font-semibold flex items-center gap-1 justify-center">
                   <TrendingUp size={10} />
-                  Collection Rate
+                  Paid
                 </div>
                 <div className="text-lg font-bold text-blue-700 mt-1 tabular-nums">{collectionRate.toFixed(0)}%</div>
+                <div className="text-[10px] text-blue-500 mt-0.5">{formatCurrency(collectedValue)} of {formatCurrency(totalValue)}</div>
                 <div className="w-full h-1.5 bg-blue-100 rounded-full overflow-hidden mt-1.5">
                   <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min(collectionRate, 100)}%` }} />
                 </div>
