@@ -9,6 +9,7 @@ import {
   type PendingConfirmation,
   type DraftInstallment,
 } from "../../store/chequesStore";
+import { useDrawerDimmer } from "../../hooks/useDrawerDimmer";
 
 const labelClass = "text-[10px] font-semibold text-gray-500 mb-1 block";
 
@@ -128,6 +129,7 @@ function makeId() {
 const AddChequesDrawer = () => {
   const navigate = useNavigate();
   const isOpen = useChequesStore((s) => s.isDrawerOpen);
+  useDrawerDimmer(isOpen);
   const closeDrawer = useChequesStore((s) => s.closeDrawer);
   const addPendingConfirmation = useChequesStore((s) => s.addPendingConfirmation);
 
@@ -220,6 +222,8 @@ const AddChequesDrawer = () => {
       unitPrice: unit.price,
       installments: [],
       createdAt: today,
+      planDownPaymentPct: selectedPlan.downPaymentPct,
+      planYears: selectedPlan.years,
     };
 
     addPendingConfirmation(pending);

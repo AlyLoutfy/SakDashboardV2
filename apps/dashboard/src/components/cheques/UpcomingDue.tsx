@@ -1,15 +1,19 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CalendarClock, ChevronDown, CheckCircle2 } from "lucide-react";
-import { useChequesStore, formatCurrency, formatDate } from "../../store/chequesStore";
+import { CalendarClock, ChevronDown, CheckCircle2, Pencil, Lock } from "lucide-react";
+import { useChequesStore, getNextInLineIds, formatCurrency, formatDate, type Cheque } from "../../store/chequesStore";
+import EditChequeDrawer from "./EditChequeDrawer";
 
 type Window = 7 | 14 | 30;
 
 const UpcomingDue = () => {
   const getUpcomingDue = useChequesStore((s) => s.getUpcomingDue);
+  const allCheques = useChequesStore((s) => s.cheques);
   const markAsCollected = useChequesStore((s) => s.markAsCollected);
   const [window, setWindow] = useState<Window>(14);
   const [expanded, setExpanded] = useState(true);
+  const [editingCheque, setEditingCheque] = useState<Cheque | null>(null);
+  const nextInLineIds = useMemo(() => getNextInLineIds(allCheques), [allCheques]);
 
   const cheques = getUpcomingDue(window);
   const totalValue = cheques.reduce((s, c) => s + c.amount, 0);
@@ -19,6 +23,7 @@ const UpcomingDue = () => {
   const today = new Date("2026-04-06");
 
   return (
+    <>
     <div className="bg-amber-50/60 border border-amber-200 rounded-xl overflow-hidden">
       {/* Header */}
       <button
@@ -117,14 +122,30 @@ const UpcomingDue = () => {
                         )}
                       </div>
                       <span className="text-xs font-bold text-gray-900 text-right tabular-nums">{formatCurrency(cheque.amount)}</span>
-                      <div className="flex justify-center">
+                      <div className="flex items-center justify-center gap-1">
                         <button
-                          onClick={() => markAsCollected(cheque.id)}
-                          className="w-6 h-6 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex items-center justify-center transition-colors"
-                          title="Mark as collected"
+                          onClick={() => setEditingCheque(cheque)}
+                          className="w-6 h-6 rounded-md bg-blue-50 hover:bg-blue-100 border border-blue-200 flex items-center justify-center transition-colors"
+                          title="Edit cheque"
                         >
-                          <CheckCircle2 size={12} className="text-emerald-600" />
+                          <Pencil size={11} className="text-blue-600" />
                         </button>
+                        {nextInLineIds.has(cheque.id) ? (
+                          <button
+                            onClick={() => markAsCollected(cheque.id)}
+                            className="w-6 h-6 rounded-md bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex items-center justify-center transition-colors"
+                            title="Mark as collected (next in line)"
+                          >
+                            <CheckCircle2 size={12} className="text-emerald-600" />
+                          </button>
+                        ) : (
+                          <div
+                            className="w-6 h-6 rounded-md bg-gray-50 border border-gray-200 flex items-center justify-center"
+                            title="Collect the earlier cheque in this wallet first"
+                          >
+                            <Lock size={10} className="text-gray-300" />
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -135,6 +156,8 @@ const UpcomingDue = () => {
         )}
       </AnimatePresence>
     </div>
+    <EditChequeDrawer cheque={editingCheque} onClose={() => setEditingCheque(null)} />
+    </>
   );
 };
 

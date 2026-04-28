@@ -13,6 +13,12 @@ export interface StatusChange {
   note: string;
 }
 
+export interface PaymentProof {
+  name: string;
+  dataUrl: string;
+  uploadedAt: string;
+}
+
 export interface Cheque {
   id: string;
   chequeNumber: string;
@@ -30,6 +36,10 @@ export interface Cheque {
   notes: string;
   paymentPlanId: string | null;
   statusHistory: StatusChange[];
+  paymentMethod?: "cheque" | "bank_transfer";
+  transferReference?: string;
+  paymentProof?: PaymentProof | null;
+  replacementOf?: string | null;
 }
 
 export interface CategoryBreakdown {
@@ -85,6 +95,8 @@ export interface PendingConfirmation {
   unitPrice: number;
   installments: DraftInstallment[];
   createdAt: string;
+  planDownPaymentPct?: number;
+  planYears?: number;
 }
 
 export type FilterStatus = "all" | ChequeStatus;
@@ -120,7 +132,11 @@ interface ChequesState {
   markAsCollected: (id: string) => void;
   markAsBounced: (id: string) => void;
   addNote: (id: string, note: string) => void;
+  updateCheque: (id: string, updates: Partial<Pick<Cheque, "chequeNumber" | "amount" | "dueDate" | "type" | "category" | "bank" | "notes">>) => void;
+  bulkUpdateCheques: (updates: { id: string; patch: Partial<Pick<Cheque, "chequeNumber" | "amount" | "dueDate" | "type" | "category" | "bank" | "notes">> }[]) => void;
   bulkMarkAsCollected: (ids: string[]) => void;
+  markAsBankTransfer: (id: string, transferRef: string, collectedDate: string, proof: { name: string; dataUrl: string } | null) => void;
+  createReplacement: (bouncedId: string, data: { chequeNumber: string; bank: string; dueDate: string; notes?: string }) => void;
   openDrawer: () => void;
   closeDrawer: () => void;
   addCheques: (cheques: Omit<Cheque, "id">[]) => void;
@@ -156,7 +172,7 @@ interface ChequesState {
   };
   getCompounds: () => string[];
   getCategories: () => string[];
-  getMonthlyCashFlow: () => { month: string; key: string; expected: number; collected: number; collectedByDate: number }[];
+  getMonthlyCashFlow: (compound?: string) => { month: string; key: string; expected: number; collected: number; collectedByDate: number }[];
 }
 
 const TODAY = "2026-04-06";
@@ -703,6 +719,25 @@ export const getStatusLabel = (status: ChequeStatus) => {
   }
 };
 
+// Returns the set of cheque IDs that are "next in line" — per wallet (clientId+unitCode),
+// the earliest-due cheque whose status is not "collected". Bounced cheques count as next
+// because they block the sequence until replaced.
+export function getNextInLineIds(cheques: Cheque[]): Set<string> {
+  const groups = new Map<string, Cheque[]>();
+  cheques.forEach((c) => {
+    const k = `${c.clientId}|${c.unitCode}`;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k)!.push(c);
+  });
+  const ids = new Set<string>();
+  groups.forEach((list) => {
+    const sorted = [...list].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    const next = sorted.find((c) => c.status !== "collected");
+    if (next) ids.add(next.id);
+  });
+  return ids;
+}
+
 // Auto-detect overdue: any pending cheque past its due date is overdue
 export function applyAutoOverdue(cheque: Cheque): Cheque {
   if (cheque.status === "pending" || cheque.status === "post_dated") {
@@ -771,6 +806,41 @@ export const useChequesStore = create<ChequesState>((set, get) => ({
     }));
   },
 
+  updateCheque: (id, updates) => {
+    set((state) => ({
+      cheques: state.cheques.map((c) => {
+        if (c.id !== id) return c;
+        // Financial-sensitive fields locked once collected
+        const locked = c.status === "collected";
+        const safeUpdates = locked
+          ? (({ bank, notes }) => ({ bank, notes }))(updates as { bank?: string; notes?: string })
+          : updates;
+        const cleaned = Object.fromEntries(
+          Object.entries(safeUpdates).filter(([, v]) => v !== undefined)
+        );
+        return { ...c, ...cleaned };
+      }),
+    }));
+  },
+
+  bulkUpdateCheques: (updates) => {
+    const map = new Map(updates.map((u) => [u.id, u.patch]));
+    set((state) => ({
+      cheques: state.cheques.map((c) => {
+        const patch = map.get(c.id);
+        if (!patch) return c;
+        const locked = c.status === "collected";
+        const safe = locked
+          ? (({ bank, notes }) => ({ bank, notes }))(patch as { bank?: string; notes?: string })
+          : patch;
+        const cleaned = Object.fromEntries(
+          Object.entries(safe).filter(([, v]) => v !== undefined)
+        );
+        return { ...c, ...cleaned };
+      }),
+    }));
+  },
+
   bulkMarkAsCollected: (ids) => {
     const idSet = new Set(ids);
     set((state) => ({
@@ -783,6 +853,51 @@ export const useChequesStore = create<ChequesState>((set, get) => ({
         } : c
       ),
     }));
+  },
+
+  markAsBankTransfer: (id, transferRef, collectedDate, proof) => {
+    set((state) => ({
+      cheques: state.cheques.map((c) =>
+        c.id === id ? {
+          ...c,
+          status: "collected" as ChequeStatus,
+          collectedDate,
+          paymentMethod: "bank_transfer" as const,
+          transferReference: transferRef,
+          paymentProof: proof ? { name: proof.name, dataUrl: proof.dataUrl, uploadedAt: TODAY } : null,
+          statusHistory: [...c.statusHistory, { from: c.status, to: "collected" as ChequeStatus, date: collectedDate, note: `Bank transfer: ${transferRef}` }],
+        } : c
+      ),
+    }));
+  },
+
+  createReplacement: (bouncedId, data) => {
+    const { cheques } = get();
+    const bounced = cheques.find((c) => c.id === bouncedId);
+    if (!bounced) return;
+    const dueObj = new Date(data.dueDate);
+    const todayObj = new Date(TODAY);
+    const status: ChequeStatus = dueObj < todayObj ? "pending" : "post_dated";
+    const newCheque: Cheque = {
+      id: `chq-replacement-${Date.now()}`,
+      chequeNumber: data.chequeNumber,
+      clientId: bounced.clientId,
+      clientName: bounced.clientName,
+      unitCode: bounced.unitCode,
+      compound: bounced.compound,
+      amount: bounced.amount,
+      dueDate: data.dueDate,
+      collectedDate: null,
+      status,
+      type: bounced.type,
+      category: bounced.category,
+      bank: data.bank,
+      notes: data.notes || `Replacement for bounced cheque ${bounced.chequeNumber}`,
+      paymentPlanId: null,
+      statusHistory: [],
+      replacementOf: bouncedId,
+    };
+    set((state) => ({ cheques: [...state.cheques, newCheque] }));
   },
 
   openDrawer: () => set({ isDrawerOpen: true }),
@@ -1061,9 +1176,10 @@ export const useChequesStore = create<ChequesState>((set, get) => ({
     return [...new Set(cheques.map((c) => c.category))];
   },
 
-  getMonthlyCashFlow: () => {
+  getMonthlyCashFlow: (compound?: string) => {
     const { cheques: raw } = get();
-    const cheques = raw.map(applyAutoOverdue);
+    const all = raw.map(applyAutoOverdue);
+    const cheques = compound && compound !== "all" ? all.filter((c) => c.compound === compound) : all;
     const months: Record<string, { expected: number; collected: number; collectedByDate: number }> = {};
 
     // Helper to ensure a month entry exists

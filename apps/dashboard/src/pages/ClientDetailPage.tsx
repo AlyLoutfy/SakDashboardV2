@@ -12,7 +12,12 @@ import {
   Calendar,
   TrendingUp,
   Clock,
+  Pencil,
+  Download,
 } from "lucide-react";
+import EditChequeDrawer from "../components/cheques/EditChequeDrawer";
+import ChequeNoteCell from "../components/cheques/ChequeNoteCell";
+import ChequeNoteModal from "../components/cheques/ChequeNoteModal";
 import {
   useChequesStore,
   applyAutoOverdue,
@@ -54,6 +59,9 @@ const UnitSection = ({
   isExpanded,
   onToggle,
   markAsCollected,
+  onEdit,
+  onEditNote,
+  onEditWallet,
   unitIndex,
 }: {
   unit: UnitInfo;
@@ -61,6 +69,9 @@ const UnitSection = ({
   isExpanded: boolean;
   onToggle: () => void;
   markAsCollected: (id: string) => void;
+  onEdit: (cheque: Cheque) => void;
+  onEditNote: (cheque: Cheque) => void;
+  onEditWallet: () => void;
   unitIndex: number;
 }) => {
   const collected = cheques.filter((c) => c.status === "collected");
@@ -68,6 +79,8 @@ const UnitSection = ({
   const collectedValue = collected.reduce((s, c) => s + c.amount, 0);
   const rate = totalValue > 0 ? (collectedValue / totalValue) * 100 : 0;
   const hasIssues = cheques.some((c) => c.status === "overdue" || c.status === "bounced");
+  // Next-in-line = earliest-due non-collected cheque (cheques are already sorted by due date)
+  const nextInLineId = cheques.find((c) => c.status !== "collected")?.id;
 
   // Category breakdown for this unit
   const categories = useMemo(() => {
@@ -104,9 +117,12 @@ const UnitSection = ({
       }`}
     >
       {/* Unit header */}
-      <button
+      <div
         onClick={onToggle}
-        className="w-full px-5 py-4 flex items-center gap-4 hover:bg-gray-50/50 transition-colors text-left"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggle(); } }}
+        className="w-full px-5 py-4 flex items-center gap-4 hover:bg-gray-50/50 transition-colors text-left cursor-pointer"
       >
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold ${
           hasIssues ? "bg-red-50 text-red-700" : "bg-blue-50 text-blue-700"
@@ -142,11 +158,32 @@ const UnitSection = ({
               {rate.toFixed(0)}%
             </div>
           </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={(e) => { e.stopPropagation(); onEditWallet(); }}
+              title="Edit wallet"
+              className="h-7 gap-1.5 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium px-2.5 rounded-lg flex items-center transition-colors"
+            >
+              <Pencil size={12} />
+              Edit
+            </button>
+
+            <button
+              onClick={(e) => { e.stopPropagation(); }}
+              title="Download cheques wallet as PDF"
+              className="h-7 gap-1.5 border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium px-2.5 rounded-lg flex items-center transition-colors"
+            >
+              <Download size={12} />
+              PDF
+            </button>
+          </div>
+
           <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} className="text-gray-400">
             <ChevronDown size={18} />
           </motion.div>
         </div>
-      </button>
+      </div>
 
       {/* Expanded content */}
       <AnimatePresence>
@@ -248,17 +285,27 @@ const UnitSection = ({
                             </span>
                           </td>
 
-                          {/* Quick collect */}
+                          {/* Actions */}
                           <td className="px-3 py-2.5 text-center">
-                            {cheque.status !== "collected" && (
+                            <div className="inline-flex items-center gap-1">
+                              <ChequeNoteCell cheque={cheque} onEdit={onEditNote} size="sm" />
                               <button
-                                onClick={() => markAsCollected(cheque.id)}
-                                title="Mark as collected"
-                                className="w-6 h-6 rounded-full bg-emerald-50 hover:bg-emerald-500 border border-emerald-200 hover:border-emerald-500 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 mx-auto"
+                                onClick={() => onEdit(cheque)}
+                                title="Edit cheque"
+                                className="w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-500 border border-blue-200 hover:border-blue-500 flex items-center justify-center transition-all group/edit opacity-0 group-hover:opacity-100"
                               >
-                                <CheckCircle2 size={12} className="text-emerald-500 hover:text-white transition-colors" />
+                                <Pencil size={11} className="text-blue-500 group-hover/edit:text-white transition-colors" />
                               </button>
-                            )}
+                              {cheque.status !== "collected" && cheque.id === nextInLineId && (
+                                <button
+                                  onClick={() => markAsCollected(cheque.id)}
+                                  title="Mark as collected (next in line)"
+                                  className="w-6 h-6 rounded-full bg-emerald-50 hover:bg-emerald-500 border border-emerald-200 hover:border-emerald-500 flex items-center justify-center transition-all group/collect"
+                                >
+                                  <CheckCircle2 size={12} className="text-emerald-500 group-hover/collect:text-white transition-colors" />
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
@@ -315,6 +362,8 @@ const ClientDetailPage = () => {
   const unitRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const allCheques = useChequesStore((s) => s.cheques).map(applyAutoOverdue);
   const markAsCollected = useChequesStore((s) => s.markAsCollected);
+  const [editingCheque, setEditingCheque] = useState<Cheque | null>(null);
+  const [noteCheque, setNoteCheque] = useState<Cheque | null>(null);
 
   const clientCheques = useMemo(
     () => allCheques.filter((c) => c.clientId === clientId),
@@ -564,6 +613,9 @@ const ClientDetailPage = () => {
                       isExpanded={expandedUnits.has(key)}
                       onToggle={() => toggleUnit(key)}
                       markAsCollected={markAsCollected}
+                      onEdit={setEditingCheque}
+                      onEditNote={setNoteCheque}
+                      onEditWallet={() => navigate(`/cheques/wallet/${clientId}/${encodeURIComponent(unit.unitCode)}/edit`)}
                       unitIndex={idx}
                     />
                   </div>
@@ -573,6 +625,9 @@ const ClientDetailPage = () => {
           </div>
         </div>
       </div>
+
+      <EditChequeDrawer cheque={editingCheque} onClose={() => setEditingCheque(null)} />
+      <ChequeNoteModal cheque={noteCheque} onClose={() => setNoteCheque(null)} />
     </div>
   );
 };

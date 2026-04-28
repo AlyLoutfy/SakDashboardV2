@@ -6,8 +6,10 @@ import DesignsPage from "./pages/DesignsPage";
 import ReportsPage from "./pages/ReportsPage";
 import PaymentPlansPage from "./pages/PaymentPlansPage";
 import ChequesCollectionPage from "./pages/ChequesCollectionPage";
+import InventoryDataPage from "./pages/InventoryDataPage";
 import ClientDetailPage from "./pages/ClientDetailPage";
 import ChequeConfirmationPage from "./pages/ChequeConfirmationPage";
+import WalletEditPage from "./pages/WalletEditPage";
 import BlockingRequestsPage from "./pages/BlockingRequestsPage";
 import ReservationRequestsPage from "./pages/ReservationRequestsPage";
 import ComponentLibraryPage from "./pages/ComponentLibraryPage";
@@ -28,7 +30,8 @@ function App() {
       <Routes>
         {/* Dashboard Routes */}
         <Route path="/" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="/integrations" replace />} />
+          <Route index element={<Navigate to="/inventory" replace />} />
+          <Route path="inventory" element={<InventoryDataPage />} />
           <Route path="integrations" element={<IntegrationsPage />} />
           <Route path="designs" element={<DesignsPage />} />
           <Route path="reports" element={<ReportsPage />} />
@@ -36,6 +39,7 @@ function App() {
           <Route path="cheques" element={<ChequesCollectionPage />} />
           <Route path="cheques/client/:clientId" element={<ClientDetailPage />} />
           <Route path="cheques/confirm/:pendingId" element={<ChequeConfirmationPage />} />
+          <Route path="cheques/wallet/:clientId/:unitCode/edit" element={<WalletEditPage />} />
           <Route path="blocking-requests" element={<BlockingRequestsPage />} />
           <Route path="reservation-requests" element={<ReservationRequestsPage />} />
           <Route path="components" element={<ComponentLibraryPage />} />

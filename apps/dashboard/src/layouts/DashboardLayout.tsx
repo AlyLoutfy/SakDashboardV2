@@ -3,7 +3,7 @@ import Sidebar from "../components/Sidebar";
 
 const DashboardLayout = () => {
   const location = useLocation();
-  const isFullHeightPage = location.pathname.startsWith("/integrations") || location.pathname.startsWith("/reports") || location.pathname.startsWith("/payment-plans");
+  const isFullHeightPage = location.pathname.startsWith("/integrations") || location.pathname.startsWith("/reports") || location.pathname.startsWith("/payment-plans") || location.pathname.startsWith("/inventory");
 
   return (
     <div className="flex h-screen w-full bg-white overflow-hidden">

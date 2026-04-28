@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, XCircle, MoreHorizontal, FileText, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, AlertTriangle, Check, Clock } from "lucide-react";
+import { CheckCircle2, XCircle, MoreHorizontal, FileText, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, AlertTriangle, Check, Clock, Pencil, Building2, RefreshCw, Paperclip } from "lucide-react";
 import {
   useChequesStore,
+  getNextInLineIds,
   formatCurrency,
   formatDate,
   getStatusColor,
@@ -12,18 +13,29 @@ import {
   getCategoryColor,
   type Cheque,
 } from "../../store/chequesStore";
+import EditChequeDrawer from "./EditChequeDrawer";
+import ChequeNoteCell from "./ChequeNoteCell";
+import ChequeNoteModal from "./ChequeNoteModal";
+import PaymentResolutionDrawer from "./PaymentResolutionDrawer";
 
 const ChequesTable = () => {
   const navigate = useNavigate();
   const getFilteredCheques = useChequesStore((s) => s.getFilteredCheques);
+  const allCheques = useChequesStore((s) => s.cheques);
   const markAsCollected = useChequesStore((s) => s.markAsCollected);
   const markAsBounced = useChequesStore((s) => s.markAsBounced);
   const bulkMarkAsCollected = useChequesStore((s) => s.bulkMarkAsCollected);
   const cheques = getFilteredCheques();
+  // Compute next-in-line against ALL cheques, not filtered — filters mustn't change order-of-collection rule
+  const nextInLineIds = useMemo(() => getNextInLineIds(allCheques), [allCheques]);
 
   const [sortField, setSortField] = useState<"dueDate" | "amount" | "clientName" | "status">("dueDate");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [actionMenuId, setActionMenuId] = useState<string | null>(null);
+  const [editingCheque, setEditingCheque] = useState<Cheque | null>(null);
+  const [noteCheque, setNoteCheque] = useState<Cheque | null>(null);
+  const [resolutionCheque, setResolutionCheque] = useState<Cheque | null>(null);
+  const [resolutionMode, setResolutionMode] = useState<"bank_transfer" | "replacement">("bank_transfer");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -64,8 +76,9 @@ const ChequesTable = () => {
   if (safePage !== currentPage && totalPages > 0) setCurrentPage(safePage);
   const paginated = sorted.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
 
-  // Bulk selection helpers
-  const allSelected = paginated.length > 0 && paginated.every((c) => selectedIds.has(c.id));
+  // Bulk selection helpers — only next-in-line cheques are selectable (sequential approval rule)
+  const selectableInPage = paginated.filter((c) => nextInLineIds.has(c.id));
+  const allSelected = selectableInPage.length > 0 && selectableInPage.every((c) => selectedIds.has(c.id));
   const someSelected = selectedIds.size > 0;
   const hasNonCollectedSelected = [...selectedIds].some((id) => {
     const c = cheques.find((ch) => ch.id === id);
@@ -73,6 +86,7 @@ const ChequesTable = () => {
   });
 
   const toggleSelect = (id: string) => {
+    if (!nextInLineIds.has(id)) return;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -85,7 +99,7 @@ const ChequesTable = () => {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(paginated.map((c) => c.id)));
+      setSelectedIds(new Set(selectableInPage.map((c) => c.id)));
     }
   };
 
@@ -145,7 +159,9 @@ const ChequesTable = () => {
             <th className="w-10 px-3 py-2.5">
               <button
                 onClick={toggleSelectAll}
-                className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                disabled={selectableInPage.length === 0}
+                title={selectableInPage.length === 0 ? "No selectable rows (only next-in-line cheques can be collected)" : "Select all next-in-line"}
+                className={`w-4 h-4 rounded border flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
                   allSelected
                     ? "bg-blue-600 border-blue-600"
                     : "border-gray-300 hover:border-gray-400 bg-white"
@@ -170,6 +186,7 @@ const ChequesTable = () => {
               <div className="flex items-center gap-1">Due Date <SortIcon field="dueDate" /></div>
             </th>
             <th className="text-left font-semibold text-gray-500 px-3 py-2.5">Bank</th>
+            <th className="text-center font-semibold text-gray-500 px-3 py-2.5 w-12">Note</th>
             <th className="text-center font-semibold text-gray-500 px-3 py-2.5 w-16">Actions</th>
           </tr>
         </thead>
@@ -192,7 +209,9 @@ const ChequesTable = () => {
                 <td className="w-10 px-3 py-2.5">
                   <button
                     onClick={() => toggleSelect(cheque.id)}
-                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                    disabled={!nextInLineIds.has(cheque.id)}
+                    title={!nextInLineIds.has(cheque.id) ? (cheque.status === "collected" ? "Already collected" : "Earlier cheque must be collected first") : undefined}
+                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
                       isSelected
                         ? "bg-blue-600 border-blue-600"
                         : "border-gray-300 hover:border-gray-400 bg-white"
@@ -209,13 +228,25 @@ const ChequesTable = () => {
                       <span className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
                       {getStatusLabel(cheque.status)}
                     </span>
+                    {cheque.paymentMethod === "bank_transfer" && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-600 border border-blue-200">
+                        <Building2 size={9} />
+                        Transfer
+                      </span>
+                    )}
+                    {cheque.replacementOf && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-orange-50 text-orange-600 border border-orange-200">
+                        <RefreshCw size={9} />
+                        Replacement
+                      </span>
+                    )}
                     {daysOverdue > 0 && (
                       <span className="flex items-center gap-0.5 text-[10px] text-red-500 font-medium">
                         <AlertTriangle size={10} />
                         {daysOverdue}d
                       </span>
                     )}
-                    {cheque.status !== "collected" && (
+                    {cheque.status !== "collected" && nextInLineIds.has(cheque.id) && (
                       <div className="relative group/collect opacity-0 group-hover:opacity-100">
                         <button
                           onClick={() => markAsCollected(cheque.id)}
@@ -225,7 +256,7 @@ const ChequesTable = () => {
                         </button>
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover/collect:block pointer-events-none z-10">
                           <div className="bg-gray-900 text-white text-[10px] font-medium px-2 py-1 rounded-md whitespace-nowrap shadow-lg">
-                            Mark as collected
+                            Mark as collected (next in line)
                           </div>
                         </div>
                       </div>
@@ -291,6 +322,24 @@ const ChequesTable = () => {
                   <span className="text-gray-500">{cheque.bank}</span>
                 </td>
 
+                {/* Note */}
+                <td className="px-3 py-2.5 text-center">
+                  <div className="flex justify-center items-center gap-1">
+                    <ChequeNoteCell cheque={cheque} onEdit={setNoteCheque} />
+                    {cheque.paymentProof && (
+                      <a
+                        href={cheque.paymentProof.dataUrl}
+                        download={cheque.paymentProof.name}
+                        title={`Proof: ${cheque.paymentProof.name}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-5 h-5 rounded flex items-center justify-center text-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      >
+                        <Paperclip size={11} />
+                      </a>
+                    )}
+                  </div>
+                </td>
+
                 {/* Actions */}
                 <td className="px-3 py-2.5 text-center relative">
                   <button
@@ -310,13 +359,24 @@ const ChequesTable = () => {
                           exit={{ opacity: 0, scale: 0.95, y: -4 }}
                           className="absolute right-3 top-full mt-0.5 bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1 min-w-[140px]"
                         >
-                          {cheque.status !== "collected" && (
+                          <button
+                            onClick={() => { setEditingCheque(cheque); setActionMenuId(null); }}
+                            className="w-full px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2 transition-colors"
+                          >
+                            <Pencil size={13} /> Edit
+                          </button>
+                          {cheque.status !== "collected" && nextInLineIds.has(cheque.id) && (
                             <button
                               onClick={() => { markAsCollected(cheque.id); setActionMenuId(null); }}
                               className="w-full px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition-colors"
                             >
                               <CheckCircle2 size={13} /> Mark Collected
                             </button>
+                          )}
+                          {cheque.status !== "collected" && !nextInLineIds.has(cheque.id) && (
+                            <div className="px-3 py-1.5 text-[10px] text-gray-400 border-b border-gray-100">
+                              Collect the earlier cheque in this wallet first.
+                            </div>
                           )}
                           {cheque.status !== "bounced" && cheque.status !== "collected" && (
                             <button
@@ -326,10 +386,21 @@ const ChequesTable = () => {
                               <XCircle size={13} /> Mark Bounced
                             </button>
                           )}
-                          {cheque.notes && (
-                            <div className="px-3 py-1.5 text-[10px] text-gray-400 border-t border-gray-100 mt-1">
-                              {cheque.notes}
-                            </div>
+                          {cheque.status !== "collected" && (
+                            <button
+                              onClick={() => { setResolutionMode("bank_transfer"); setResolutionCheque(cheque); setActionMenuId(null); }}
+                              className="w-full px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2 transition-colors"
+                            >
+                              <Building2 size={13} /> Record Bank Transfer
+                            </button>
+                          )}
+                          {cheque.status === "bounced" && (
+                            <button
+                              onClick={() => { setResolutionMode("replacement"); setResolutionCheque(cheque); setActionMenuId(null); }}
+                              className="w-full px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-orange-50 hover:text-orange-700 flex items-center gap-2 transition-colors"
+                            >
+                              <RefreshCw size={13} /> Create Replacement
+                            </button>
                           )}
                           {cheque.statusHistory.length > 0 && (
                             <div className="border-t border-gray-100 mt-1 px-3 py-2">
@@ -461,6 +532,14 @@ const ChequesTable = () => {
           )}
         </div>
       </div>
+
+      <EditChequeDrawer cheque={editingCheque} onClose={() => setEditingCheque(null)} />
+      <ChequeNoteModal cheque={noteCheque} onClose={() => setNoteCheque(null)} />
+      <PaymentResolutionDrawer
+        cheque={resolutionCheque}
+        mode={resolutionMode}
+        onClose={() => setResolutionCheque(null)}
+      />
     </div>
   );
 };

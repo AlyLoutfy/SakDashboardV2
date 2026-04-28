@@ -1,30 +1,65 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Landmark, LayoutList, Users, BarChart3, Plus, Download, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useChequesStore, formatCurrency, formatDate } from "../store/chequesStore";
 
-import StatCards from "../components/cheques/StatCards";
 import ChequesFilters from "../components/cheques/ChequesFilters";
 import ChequesTable from "../components/cheques/ChequesTable";
 import ClientBreakdown from "../components/cheques/ClientBreakdown";
-import CashFlowChart from "../components/cheques/CashFlowChart";
+import CashFlowChart, { type CashFlowMode } from "../components/cheques/CashFlowChart";
 import AddChequesDrawer from "../components/cheques/AddChequesDrawer";
 
 type ViewTab = "cheques" | "clients" | "cashflow";
+
+const currentMonthKey = "2026-04";
+
+const selectClass =
+  "h-8 pl-2.5 pr-7 text-xs border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 text-gray-700 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%239ca3af%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-size-[12px] bg-position-[right_8px_center] bg-no-repeat";
 
 const ChequesCollectionPage = () => {
   const [activeTab, setActiveTab] = useState<ViewTab>("clients");
   const [filterPending, setFilterPending] = useState(false);
   const navigate = useNavigate();
+
   const getFilteredCheques = useChequesStore((s) => s.getFilteredCheques);
   const getOverallStats = useChequesStore((s) => s.getOverallStats);
   const openDrawer = useChequesStore((s) => s.openDrawer);
   const pendingConfirmations = useChequesStore((s) => s.pendingConfirmations);
+  const getMonthlyCashFlow = useChequesStore((s) => s.getMonthlyCashFlow);
+  const getCompounds = useChequesStore((s) => s.getCompounds);
 
   const filteredCount = getFilteredCheques().length;
   const stats = getOverallStats();
+  const compounds = getCompounds();
+
+  // Cash flow controls — lifted here so they can render inline with tabs
+  const [cfCompound, setCfCompound] = useState("all");
+  const [cfMode, setCfMode] = useState<CashFlowMode>("due_date");
+
+  const cfAllData = getMonthlyCashFlow(cfCompound !== "all" ? cfCompound : undefined);
+
+  const cfDefaultFrom = useMemo(() => {
+    const idx = cfAllData.findIndex((d) => d.key === currentMonthKey);
+    const startIdx = Math.max(0, idx - 6);
+    return cfAllData[startIdx]?.key ?? cfAllData[0]?.key ?? currentMonthKey;
+  }, [cfAllData]);
+
+  const cfDefaultTo = useMemo(() => {
+    const idx = cfAllData.findIndex((d) => d.key === currentMonthKey);
+    const endIdx = Math.min(cfAllData.length - 1, idx + 5);
+    return cfAllData[endIdx]?.key ?? cfAllData[cfAllData.length - 1]?.key ?? currentMonthKey;
+  }, [cfAllData]);
+
+  const [cfFromMonth, setCfFromMonth] = useState(cfDefaultFrom);
+  const [cfToMonth, setCfToMonth] = useState(cfDefaultTo);
+
+  // Reset range when compound changes
+  useEffect(() => {
+    setCfFromMonth(cfDefaultFrom);
+    setCfToMonth(cfDefaultTo);
+  }, [cfCompound, cfDefaultFrom, cfDefaultTo]);
 
   const tabs: { id: ViewTab; label: string; icon: typeof LayoutList; count?: number }[] = [
     { id: "clients", label: "By Client", icon: Users },
@@ -34,7 +69,6 @@ const ChequesCollectionPage = () => {
 
   return (
     <div className="h-full w-full bg-white text-gray-900 overflow-hidden font-sans flex flex-col">
-      {/* Add Cheques Drawer */}
       <AddChequesDrawer />
 
       {/* Top Bar */}
@@ -112,16 +146,87 @@ const ChequesCollectionPage = () => {
             </div>
           )}
 
-          {/* Filters + Tabs */}
-          <div className="flex items-start justify-between gap-4">
-            {/* Filters */}
-            <div className="flex-1 min-w-0">
+          {/* Filters + Tabs — single row */}
+          <div className="flex items-center justify-between gap-3">
+            {/* Left: contextual filters */}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
               {(activeTab === "cheques" || activeTab === "clients") && (
                 <ChequesFilters showFullFilters={activeTab === "cheques"} />
               )}
+
+              {activeTab === "cashflow" && (
+                <>
+                  {/* Compound */}
+                  <select
+                    value={cfCompound}
+                    onChange={(e) => setCfCompound(e.target.value)}
+                    className={selectClass}
+                  >
+                    <option value="all">All Compounds</option>
+                    {compounds.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+
+                  <div className="w-px h-5 bg-gray-200 shrink-0" />
+
+                  {/* Mode toggle */}
+                  <div className="flex items-center bg-gray-100 rounded-lg p-0.5 shrink-0">
+                    <button
+                      onClick={() => setCfMode("due_date")}
+                      className={`px-2.5 py-1.5 text-[10px] font-semibold rounded-md transition-all whitespace-nowrap ${
+                        cfMode === "due_date" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      By Due Date
+                    </button>
+                    <button
+                      onClick={() => setCfMode("collection_date")}
+                      className={`px-2.5 py-1.5 text-[10px] font-semibold rounded-md transition-all whitespace-nowrap ${
+                        cfMode === "collection_date" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      By Collection Date
+                    </button>
+                  </div>
+
+                  <div className="w-px h-5 bg-gray-200 shrink-0" />
+
+                  {/* Month range */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <select
+                      value={cfFromMonth}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setCfFromMonth(v);
+                        if (v > cfToMonth) setCfToMonth(v);
+                      }}
+                      className={selectClass}
+                    >
+                      {cfAllData.map((d) => (
+                        <option key={d.key} value={d.key}>{d.month}</option>
+                      ))}
+                    </select>
+                    <span className="text-[10px] text-gray-400 font-medium">to</span>
+                    <select
+                      value={cfToMonth}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setCfToMonth(v);
+                        if (v < cfFromMonth) setCfFromMonth(v);
+                      }}
+                      className={selectClass}
+                    >
+                      {cfAllData.filter((d) => d.key >= cfFromMonth).map((d) => (
+                        <option key={d.key} value={d.key}>{d.month}</option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* Tabs */}
+            {/* Right: tabs */}
             <div className="flex items-center bg-gray-100 rounded-lg p-0.5 shrink-0">
               {tabs.map((tab) => (
                 <button
@@ -148,7 +253,7 @@ const ChequesCollectionPage = () => {
           </div>
         </div>
 
-        {/* Tab Content — fills remaining height */}
+        {/* Tab Content */}
         <div className="flex-1 flex flex-col min-h-0 px-6 pb-4">
           {activeTab === "cheques" && (
             <div className="flex-1 flex flex-col min-h-0 bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -210,7 +315,12 @@ const ChequesCollectionPage = () => {
 
           {activeTab === "cashflow" && (
             <div className="flex-1 overflow-auto">
-              <CashFlowChart />
+              <CashFlowChart
+                mode={cfMode}
+                fromMonth={cfFromMonth}
+                toMonth={cfToMonth}
+                allData={cfAllData}
+              />
             </div>
           )}
         </div>

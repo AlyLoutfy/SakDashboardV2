@@ -37,12 +37,11 @@ const Sidebar = () => {
     {
       title: "INVENTORY",
       items: [
-        { name: "Summary", path: "/", icon: HomeIcon },
+        { name: "Inventory Data", path: "/inventory", icon: Database },
         { name: "Compounds", path: "/compounds", icon: Building2 },
         { name: "Unit Designs", path: "/unit-designs", icon: Layers },
         { name: "Payment Plans", path: "/payment-plans", icon: CreditCard },
         { name: "Cheques", path: "/cheques", icon: Landmark },
-        { name: "Unit Data", path: "/unit-data", icon: Database },
       ],
     },
     {

@@ -5,6 +5,7 @@ import { useCompoundsStore, type Unit } from "../../store/compoundsStore";
 import { useSalesStore, type PaymentPlan } from "../../store/salesStore";
 import { motion, AnimatePresence } from "framer-motion";
 import CompareUnitsDrawer from "./CompareUnitsDrawer";
+import { useDrawerDimmer } from "../../hooks/useDrawerDimmer";
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-EG", {
@@ -23,6 +24,7 @@ const BulkActionsBar = ({ compoundId }: BulkActionsBarProps) => {
   const { paymentPlans } = useSalesStore();
   const [showOfferDrawer, setShowOfferDrawer] = useState(false);
   const [showCompareDrawer, setShowCompareDrawer] = useState(false);
+  useDrawerDimmer(showOfferDrawer);
 
   const selectedUnits = selectedUnitIds.map((id) => getUnitById(id)).filter((u): u is Unit => !!u && u.compoundId === compoundId);
 

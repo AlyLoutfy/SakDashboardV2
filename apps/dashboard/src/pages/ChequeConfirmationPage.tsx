@@ -85,6 +85,23 @@ const ChequeConfirmationPage = () => {
   const [dragEndRow, setDragEndRow] = useState<number | null>(null);
   const isDragging = useRef(false);
 
+  // Auto-select the plan that was chosen in the drawer and pre-generate installments
+  useEffect(() => {
+    if (!pending) return;
+    if (selectedPlanId || pending.installments.length > 0) return;
+    if (!pending.planDownPaymentPct || !pending.planYears) return;
+    const match = PLAN_TEMPLATES.find(
+      (p) => p.downPaymentPct === pending.planDownPaymentPct && p.years === pending.planYears
+    );
+    if (!match) return;
+    setSelectedPlanId(match.id);
+    updatePendingInstallments(
+      pending.id,
+      generateDraftInstallments(pending.unitPrice, match.downPaymentPct, match.years, pending.contractDate, Math.round(pending.unitPrice * match.maintenance))
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pending?.id]);
+
   if (!pending) {
     return (
       <div className="h-full w-full flex items-center justify-center">

@@ -18,6 +18,7 @@ import { PAYMENT_SCHEDULE_DESIGNS } from "../components/PaymentScheduleDesigns";
 import { COMPLEX_FILTER_DESIGNS } from "../components/ComplexFilterHeaderDesigns";
 import { CUSTOM_PLAN_DESIGNS } from "../components/CustomPlanDesigns";
 import { PENDING_CONFIRMATION_HEADER_DESIGNS } from "../components/PendingConfirmationDesigns";
+import { UNIT_ROW_DESIGNS } from "../components/UnitRowDesigns";
 import { Search } from "lucide-react";
 
 const DESIGNS = INTEGRATION_DESIGNS;
@@ -284,6 +285,10 @@ const DesignsPage = () => {
             <button onClick={() => handleTabChange("pending_confirm")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "pending_confirm" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
               Pending Confirm
               {activeTab === "pending_confirm" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
+            </button>
+            <button onClick={() => handleTabChange("unit_row")} className={`px-4 py-3 font-medium cursor-pointer outline-none transition-colors relative ${activeTab === "unit_row" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"}`}>
+              Unit Row
+              {activeTab === "unit_row" && <div className="absolute bottom-0 left-0 h-0.5 bg-blue-600 rounded-t-full w-full" />}
             </button>
           </div>
         </div>
@@ -641,6 +646,25 @@ const DesignsPage = () => {
                     {id}. {name}
                   </h2>
                   <p className="text-sm text-gray-500">Pending confirmation section header design.</p>
+                </div>
+                <div className="w-full bg-gray-50/50 p-6 rounded-3xl border border-gray-100">
+                  <Component />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Unit Row Designs */}
+        {activeTab === "unit_row" && (
+          <div key={`unit_row-${Date.now()}`} className="space-y-12 pt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {UNIT_ROW_DESIGNS.map(({ id, name, Component }) => (
+              <div key={id} className="space-y-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                    {id}. {name}
+                  </h2>
+                  <p className="text-sm text-gray-500">Unit row on the client detail page — rethinking the Edit Wallet affordance.</p>
                 </div>
                 <div className="w-full bg-gray-50/50 p-6 rounded-3xl border border-gray-100">
                   <Component />

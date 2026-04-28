@@ -3,6 +3,7 @@ import { X, Trophy, ChevronLeft, ChevronRight, Bed, Bath, Car, Maximize2, Layers
 import { motion, AnimatePresence } from "framer-motion";
 import { type Unit } from "../../store/compoundsStore";
 import { useSalesStore } from "../../store/salesStore";
+import { useDrawerDimmer } from "../../hooks/useDrawerDimmer";
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-EG", {
@@ -34,6 +35,7 @@ const statusColors: Record<string, { bg: string; text: string; border: string }>
 };
 
 const CompareUnitsDrawer = ({ units, onClose, onRemoveUnit }: CompareUnitsDrawerProps) => {
+  useDrawerDimmer(true);
   const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { paymentPlans } = useSalesStore();

@@ -6,6 +6,7 @@ import type { PaymentPlan, Installment } from "../../store/salesStore";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CustomPlanBuilder from "./CustomPlanBuilder";
+import { useDrawerDimmer } from "../../hooks/useDrawerDimmer";
 
 interface ReservationDrawerProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface ReservationDrawerProps {
 }
 
 const ReservationDrawer = ({ isOpen, unitPrice, onSubmit, isEditing }: ReservationDrawerProps) => {
+  useDrawerDimmer(isOpen);
   const { closeReservationDrawer, currentReservation, updateCurrentClient, updateReservationDetails, paymentPlans, setCurrentPaymentPlan, createReservation, updateReservation, editingReservationId, openWithCustomPlan } = useSalesStore();
 
   const [selectedPlanId, setSelectedPlanId] = useState<string>("");
